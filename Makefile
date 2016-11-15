@@ -105,12 +105,20 @@ NANOGLK_PARTS = nanoglk/main.o nanoglk/event.o nanoglk/window.o		\
 ALL_PARTS = $(NANOGLK_PARTS) $(FROTZ_PARTS) $(GLULXE_PARTS) $(GIT_PARTS)
 
 # This works so far for all. May be differiencated in the future.
+# note, newer compilers fail. Ubuntu 16.04 / 16.10 fail
+#   see: http://askubuntu.com/questions/68922/cant-compile-program-that-uses-sdl-after-upgrade-to-11-10-undefined-reference
 CFLAGS_ALL = -Wall -std=c99 -DZTERP_GLK -DGLK -DOS_UNIX $(LOG)
 NANOGLK_LIBS_ALL = -lSDL -lSDL_ttf -lSDL_image
+NANOGLK_LIBS_ALL_END = -lSDL -lSDL_ttf -lSDL_image -lm
+
 
 CFLAGS = $(CFLAGS_ALL) -g
 INCLUDES = -I. -Iglk
+# DUMA project for memory buffer problems http://duma.sourceforge.net/
+#  some tips on setting up? https://github.com/crosstool-ng/crosstool-ng/issues/440
+# also need to add -lm ? https://github.com/ccxvii/asstools/issues/5
 NANOGLK_LIBS = $(NANOGLK_LIBS_ALL) -lduma
+# NANOGLK_LIBS = $(NANOGLK_LIBS_ALL)
 
 # If the goal is "copy-nn", switch to NanoNote options.
 ifeq ($(MAKECMDGOALS), copy-nn)
@@ -131,31 +139,31 @@ LDFLAGS = -Wl,-rpath-link=$(ROOT_DIR)/usr/lib
 all: $(PROGRAMS)
 
 nanofrotz: $(NANOGLK_PARTS) $(FROTZ_PARTS)
-	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanofrotz $(NANOGLK_PARTS) $(FROTZ_PARTS)
+	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanofrotz $(NANOGLK_PARTS) $(FROTZ_PARTS) $(NANOGLK_LIBS_ALL_END)
 
 nanoglulxe: $(NANOGLK_PARTS) $(GLULXE_PARTS)
-	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanoglulxe $(NANOGLK_PARTS) $(GLULXE_PARTS)
+	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanoglulxe $(NANOGLK_PARTS) $(GLULXE_PARTS) $(NANOGLK_LIBS_ALL_END)
 
 nanogit: $(NANOGLK_PARTS) $(GIT_PARTS)
-	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanogit $(NANOGLK_PARTS) $(GIT_PARTS)
+	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanogit $(NANOGLK_PARTS) $(GIT_PARTS) $(NANOGLK_LIBS_ALL_END)
 
 nanotest-filesel: $(NANOGLK_PARTS) test/test-filesel.o
-	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-filesel $(NANOGLK_PARTS) test/test-filesel.o
+	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-filesel $(NANOGLK_PARTS) test/test-filesel.o $(NANOGLK_LIBS_ALL_END)
 
 nanotest-styles: $(NANOGLK_PARTS) test/test-styles.o
-	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-styles $(NANOGLK_PARTS) test/test-styles.o
+	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-styles $(NANOGLK_PARTS) test/test-styles.o $(NANOGLK_LIBS_ALL_END)
 
 nanotest-windows1: $(NANOGLK_PARTS) test/test-windows1.o
-	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-windows1 $(NANOGLK_PARTS) test/test-windows1.o
+	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-windows1 $(NANOGLK_PARTS) test/test-windows1.o $(NANOGLK_LIBS_ALL_END)
 
 nanotest-imgtest: $(MISC_PARTS) test/imgtest.o
-	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-imgtest $(MISC_PARTS) test/imgtest.o
+	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-imgtest $(MISC_PARTS) test/imgtest.o $(NANOGLK_LIBS_ALL_END)
 
 nanotest-conftest: $(MISC_PARTS) test/conftest.o
-	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-conftest $(MISC_PARTS) test/conftest.o
+	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-conftest $(MISC_PARTS) test/conftest.o $(NANOGLK_LIBS_ALL_END)
 
 nanotest-misctest: $(MISC_PARTS) test/misctest.o
-	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-misctest $(MISC_PARTS) test/misctest.o
+	$(CC) $(LDFLAGS) $(NANOGLK_LIBS) -o nanotest-misctest $(MISC_PARTS) test/misctest.o $(NANOGLK_LIBS_ALL_END)
 
 clean:
 	rm -f $(ALL_PARTS) test/*.o  $(PROGRAMS)
