@@ -1,0 +1,358 @@
+INTRODUCTION
+============
+
+Nanoglk is a Glk implementation based on SDL, mainly focussed on
+devices with small screens, and especially (but, of course, not
+exclusively) targeted at the Ben NanoNote. Nanoglk itself is only a
+module to be linked against interactive story file interpreters
+("terps"), but linking against some terps has already been prepared.
+
+For the Ben NanoNote, see <https://sharism.cc/> and
+<en.qi-hardware.com/>.
+
+The bulk of this README file is divided into two sections, "usage" and
+"hacking". Given the unmature state of Nanoglk, do not expect that
+usage will be that simple.
+
+Send Questions, suggestions, patches etc. to Sebastian Geerken
+<s.geerken (at) ping.de>.
+
+Prerequsites
+------------
+Nanlglk has been successfully run on Linux, and should run on other
+Unix-like systems. For other operating systems, there are certainly
+changes neccessary. Patches are welcome, but keep in mind that I
+cannot test nanoglk on other operating systems than Linux.
+
+The development versions of SDL and SDL_ttf are needed.
+
+On the Ben NanoNote, nanoglk works well with OpenWRT, but tests with
+Jlime looked quite well. (Of course, for the latter, some changes are
+neccessary in the Makefile.)
+
+
+COPYRIGHT
+=========
+
+Nanoglk itself is copyright 2012 by Sebastian Geerken.
+
+Nanoglk is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+---
+
+All files in the "glk" directory ("glk.h", "glkstart.h", "gi_blorb.h",
+"gi_blorb.c", "gi_dispa.h", "gi_dispa.c") are copyright by Andrew
+Plotkin. You may copy, distribute, and incorporate it into your own
+programs, by any means and under any conditions, as long as you do not
+modify it. You may also modify this file, incorporate it into your own
+programs, and distribute the modified version, as long as you retain a
+notice in your program or documentation which mentions the name of
+Andrew Plotkin and the URL <http://www.eblong.com/zarf/glk/index.html>.
+
+(See the respective files for more details. These files have not been
+modified.)
+
+---
+
+Not part of nanoglk, but prepared to be linked against it, are Frotz,
+Glulxe, and Git. See the respective file for details. In short, Frotz
+is released under the GNU GPL version 2 or later (the "later" clause
+applies here to be compatible with the GPLv3, under which nanoglk is
+released), Glulxe is released under the same conditions as Glk (see
+above), and Git is released under the MIT license.
+
+
+USAGE
+=====
+
+Building
+--------
+Before running "make", you should make sure that the code for the
+terps, which is not part of nanoglk, is found. In the simplest case,
+simply extract version 2011.1 of Gargoyle in a way so that the
+directories look like this:
+
+...
++- gargoyle-2011.1-sources
+|  +- <original contents of "gargoyle-2011.1-sources.zip">
+|  +- ...
+|  `- terps
+|     +- frotz
+|     `- ...
+`- nanoglk
+   +- Makefile
+   +- README     <--- You are reading this file.
+   `- ...
+
+Gargoyle can be found at <http://ccxvii.net/gargoyle/>. The sources
+can be downloaded at <http://code.google.com/p/garglk/downloads/list>.
+
+Version 2011.1 of Gargoyle contains a bug, which is fixed with the
+patch "gargoyle.diff" which comes with nanoglk. In the directory
+"gargoyle-2011.1-sources", type:
+
+patch -p 1 < ../nanoglk/gargoyle.diff
+
+"make" should then generate "nanofrotz", "nanoglulxe", and "nanogit",
+along with some tests.
+
+If this does not suit you, you may also change some variables in the
+Makefile (e. g. TERPS_DIR, TERPS and some more).
+
+"make install" will copy the terps (but not the tests) to
+/usr/local/bin.
+
+Ben NanoNote: If you type "make copy-nn" (after establishing a
+connection, e. g. by "ifconfig usb0 192.168.254.100", as root), the
+three terps and the tests will be compiled for the Ben Nanonote, and
+the terps will be copied onto the NanoNote. Most likely, you have to
+adjust some variables at the beginnin of Makefile. See here for more
+informations on how to build software for the NanoNote:
+
+- http://en.qi-hardware.com/wiki/Porting_programs
+- http://en.qi-hardware.com/wiki/Compiling_for_the_NanoNote
+
+When using Jlime instead of OpenWRT, see:
+
+- http://en.qi-hardware.com/wiki/JlimeToolchain
+
+Notice that compilation is not handled in a clean way; a given file
+may contain code for your host or for the NanoNote, depending on the
+make target you have build last. If you want to switch between your
+host as target, and the NanoNote as target, you must call "make
+clean" and generate all files again.
+
+Running
+-------
+If you compile simply for your host, "make install" copies "nanofotz",
+"nanoglulxe", and "nanogit" to /usr/local/bin. Then, simply call them
+with a story file as an argument.
+
+When running "make copy-nn", these files are copied already to
+/usr/bin/. The programs are run in the same way, the story files can
+be copied with scp onto the NanoNote.
+
+Special Keys
+------------
+The usage will mainly depend on the story file you run, but for all
+terps, there are some special keys:
+
+- Ctrl+Alt+Q quits the program without any warning.
+- Ctrl+Alt+L prints a line into the log (see below, "Logging"); useful
+  for debugging.
+- Ctrl+Alt+W print informations on all windows to log; useful for
+  debugging.
+
+Configuration
+-------------
+A terp linked to nanoglk reads two files when started: /etc/nanoglkrc
+and ~/.nanoglkrc.
+
+Nanoglk provides a large number of configuration variables, which are
+sorted into a tree looking like this:
+
+<terp> -+- buffer -------------+- normal -------+- font-path
+        |                      |                +- font-family
+        |                      |                +- font-weight
+        |                      |                +- font-style
+        |                      |                +- font-size
+        |                      |                +- background
+        |                      |                `- foreground
+        |                      +- emphasized ----- (repeats like "normal")
+        |                      +- preformatted --- (repeats like "normal")
+        |                      +- header --------- (repeats like "normal")
+        |                      +- subheader ------ (repeats like "normal")
+        |                      +- alert ---------- (repeats like "normal")
+        |                      +- note ----------- (repeats like "normal")
+        |                      +- blockquote ----- (repeats like "normal")
+        |                      +- input ---------- (repeats like "normal")
+        |                      +- user1 ---------- (repeats like "normal")
+        |                      `- user2 ---------- (repeats like "normal")
+        |
+        +- grid ----------------- (repeats like "buffer")
+        |
+        +- ui -----------------+- font-path
+        |                      +- font-family
+        |                      +- font-weight
+        |                      +- font-style
+        |                      +- font-size
+        |                      +- dialog -------+- background
+        |                      |                `- foreground
+        |                      +- input --------+- background
+        |                      |                `- foreground
+        |                      `- list ---------+- active -----+- foreground
+        |                                       |              `- background
+        |                                       `- inactive ---+- foreground
+        |                                                      `- background
+        |
+        `- window-size-factor -+- horizontal ---+- fixed
+                               |                `- proportional
+                               `- horizontal ---+- fixed
+                                                `- proportional
+
+You can change any of these variables independently of each other, if
+you like; and by using patterns, it is possible to change a complete
+group of variables by one definition. (Details below.)
+
+<terp> is the base name of the binary you run, without the path. Under
+"buffer", anything for buffer windows (windows for normal text flow)
+is configured. The next level denotes the styles ("normal" ...), then
+the following variables can be defined:
+
+- "font-path": An absolute path to the directory conaining the
+  fonts. Only TTF fonts are supported.
+- "font-family": The family name, like "DejaVuSansMono".
+- "font-weight": "normal" (or short "n") or "bold" (or short "b").
+- "font-style": "normal" (or short "n"), "italic" or "italics" (or
+  short "i"), "oblique" (or short "o"). If italics is requested, but
+  only an oblique variant exists, it is choosen; and vice versa.
+- "font-size": In pixels.
+- "background": As RRGGBB with RR, GG and BB as two-digits hex
+  numbers.
+- "foreground": As RRGGBB with RR, GG and BB as two-digits hex
+  numbers.
+
+"grid" defines, in an analogue way, values for grid windows (used
+e. g. for status lines). Under "ui", variables for the user interface
+(e. g. the file selection dialog) can be defined: fonts in general, as
+well as colors for dialogs, input fields, and lists (inactive part and
+active, selected elements).
+
+Window sizes are multiplied with window size factors. If a window is
+horizontally split into two, and the size of the new window is defined
+in pixels ("fixed"), the size is multiplied by the value of
+"window-size-factor.horizontal.fixed". Likewise, there are
+"window-size-factor.horizontal.proportional",
+"window-size-factor.vertical.fixed", and
+"window-size-factor.vertical.proportional". [This was an attempt to
+fix some complicated layouts so that they fit on small screens. Does
+not really work as I hoped, so you can simply ignore these.]
+
+Each of these values can be unambigously defined by its path,
+consisting of the names connected by ".". If you want to define the
+background colour for text in grid windows, for style "alert", in
+"nanofrotz", use
+
+   nanofrotz.grid.alert.background
+
+On the other hand, wildcards can be used to describe a group of
+variables: "?" replaces any name at this position in the path, and "*"
+replaces an arbitrary number of names. Examples:
+
+- "?.ui.dialog.background" would set the dialog background for any
+  terp;
+- "*.font-path" would set all font paths.
+
+Configuration files consists of lines with the format
+
+   <pattern> = <value>
+
+Lines starting with "#" are ignored. Lines starting with "!" contain
+special commands; currently, only
+
+   !include filename
+
+(no quotation marks around filename) is supported, which includes
+another file and processes it before continuing with the rest after
+"!include". Two things are special about "!include": firstly,
+variables can be included by eclosing them in "${...}", and, secondly,
+relative paths refer to the current directory, *not* the file this
+"!include" is found.
+
+[Here is a way to define story file specific files, although the story
+file is not part of the configuration path. (i) In ~/.nanoglkrc,
+include the line "!include nanoglkrc-story-file". (ii) Start a given
+story file "foo" from a specific directory, say ~/play/foo (where you
+may also store saved games etc.). In this directory, create a specific
+file "nanoglkrc-story-file", which is then only read when the terp is
+started from this directory, i. e. when the story file "foo" is
+played.]
+
+
+HACKING
+=======
+
+Overview
+--------
+Nanoglk consists of two parts: the directory "misc" contains code
+intended as a general base for similar programs, not restricted to IF
+interpreters. The actual Glk implementation can be found in
+"nanoglk". The latter depends on the former, but the former is
+independent of the latter.
+
+Identifiers (functions, symbols, types ...) may have a prefix:
+
+- Everything which is static needs no prefix, since the visibility is
+  limited to the compilation unit.
+- Otherwise, everything in "misc" is prefixed by "nano_".
+- Glk functions, as defined by "glk.h", have, of course, the prefix
+  "glk_".
+- All other functions in "nanoglk" get the prefix "nanoglk_".
+
+There are only two header files: "misc/misc.h" and "nanoglk/nanoglk.h"
+
+Logging
+-------
+You can use the functions nano_trace(), nano_info(), nano_warn(),
+nano_fail(), nano_warnunless(), and nano_failunless() for debugging
+and similar purposes. Futhermore, there is nanoglk_log(), which has a
+very special meaning (see below for details).
+
+Logging is controlled at compile time by activating the following
+preprocessor variables in Makefile:
+
+- LOG_FILE for logging into a file;
+- LOG_STD to print to stdout;
+- LOG_TRACE to log also trace messages;
+- LOG_GLK to print Glk log messages (via nanoglk_log()).
+
+See more information in the comment in misc/misc.c.
+
+Each Glk function should log arguments and results via
+nanoglk_log. Logging should be as early as possible, before other
+possible log messages. A good example is glk_window_open:
+
+winid_t glk_window_open(winid_t split, glui32 method, glui32 size,
+                        glui32 wintype, glui32 rock)
+{
+   winid_t win = (winid_t)nano_malloc(sizeof(struct glk_window_struct));
+   nanoglk_log("glk_window_open(%p, %d, %d, %d, %d) => %p",
+              split, method, size, wintype, rock, win);
+   ...
+
+Unless nano_malloc fails, the first message will be "glk_window_open".
+
+Make sure that a Glk function does not call another Glk function,
+since otherwise, Glk logging would not work properly. As an example,
+glk_fileref_create_temp() should not call
+glk_fileref_create_by_name(), since each call of
+glk_fileref_create_temp() will result in two log lines: one for
+glk_fileref_create_by_name() and one for glk_fileref_create_temp(),
+although only the latter has been called. Instead, both do actually
+call a third method, create_by_name().
+
+Warning
+-------
+
+The Makefile is quite incomplete: .o files only depend on .c files,
+but not on included .h files. So, when changing an .h file, better
+call "make clean" afterwards. (Will be changed, perhaps by switching
+to automake.)
+
+
+BUGS
+====
+
+Many. For version 0.0.1, it is not worth the time to keep a
+list. Simply search for "TODO" or "not implemented".

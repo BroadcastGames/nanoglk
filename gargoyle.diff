@@ -1,0 +1,13 @@
+diff -ru gargoyle-2011.1-sources.orig/terps/frotz/glkscreen.c gargoyle-2011.1-sources/terps/frotz/glkscreen.c
+--- gargoyle-2011.1-sources.orig/terps/frotz/glkscreen.c	2011-07-13 09:22:24.000000000 +0200
++++ gargoyle-2011.1-sources/terps/frotz/glkscreen.c	2012-02-07 22:09:36.000000000 +0100
+@@ -896,7 +896,9 @@
+ 	glk_set_window(gos_upper);
+ 	gos_curwin = gos_upper;
+ 
++#ifdef GARGLK
+ 	garglk_set_reversevideo(TRUE);
++#endif /* GARGLK */
+ 
+ 	curx = cury = 1;
+ 	glk_window_move_cursor(gos_upper, 0, 0);
