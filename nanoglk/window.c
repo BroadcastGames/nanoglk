@@ -142,11 +142,26 @@ static void print_windows(void)
 }
 
 /*
+ * Quick and dirty control flags during development.
+ * ToDo: make params in config file
+ * */
+static int windowFlagSetResize = FALSE;
+
+/*
  * Initialize everything related to windows. Called in main().
  */
 void nanoglk_window_init(int width, int height, int depth)
 {
-   nanoglk_surface = SDL_SetVideoMode(width, height, depth, SDL_DOUBLEBUF);
+   /* set the title bar */
+   //  ToDo: set to name of story or interpreter?
+   SDL_WM_SetCaption("nano Glk library", "nano Glk library Hello!");
+   
+   if (windowFlagSetResize) {
+      nanoglk_surface = SDL_SetVideoMode(width, height, depth, SDL_RESIZABLE | SDL_DOUBLEBUF);
+      // ToDo: implement resize logic to respond to user mouse events
+   } else {
+      nanoglk_surface = SDL_SetVideoMode(width, height, depth, SDL_DOUBLEBUF);
+   }
    nano_reg_surface(&nanoglk_surface);
 
    int i;

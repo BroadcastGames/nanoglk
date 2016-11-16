@@ -18,7 +18,9 @@ TERPS_DIR = ../gargoyle-e3466aa3db2a917e913c67c1c5ad952b55762cad/terps
 #
 # More in README and misc/misc.c.
 
-#LOG = -DLOG_FILE -DLOG_STD -DLOG_TRACE -DLOG_GLK
+# NOTE, Issue #1 on github: LOG_FILE consume all printf output too.
+LOG = -DLOG_FILE -DLOG_STD -DLOG_TRACE -DLOG_GLK
+# LOG = -DLOG_STD -DLOG_TRACE -DLOG_GLK
 
 # Compilation for the Ben NanoNote. This may become a bit tricky. This
 # configuration depends on some symbolic links, so that it is

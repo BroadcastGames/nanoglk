@@ -2,6 +2,7 @@
  * This file is part of nanoglk.
  *
  * Copyright (C) 2012 by Sebastian Geerken
+ * portions Copyright (c) 2016 by Stephen A. Gutknecht
  *
  * Nanoglk is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -55,16 +56,20 @@ static void quit(void);
 void nano_init(int argc, char *argv[], int allow_suspend)
 {
 #ifdef LOG_FILE
+   printf("LOG_FILE processing...\n");
    char buf[1024];
    sprintf(buf, "%s-%d.log", argv[0], getpid());
+   printf("LOG_FILE %s\n", buf);
+   // ToDo: On Unbutu 16.10 this seems to never reach the printf following the fopen
    log = fopen(buf, "w");
+   // printf("LOG_FILE %s\n", buf);
 #endif
 
    for(int i = 0; i < 26; i++)
       registered_key_func[i] = NULL;
 
    _allow_suspend = allow_suspend;
-
+   
    atexit(quit);
 }
 
@@ -247,6 +252,7 @@ void nano_register_key(char key, void (*func)(void))
    nano_failunless(key >= 'a' && key <= 'z',
                    "nano_register_key: invalid key '%c'", key);
    registered_key_func[key - 'a'] = func;
+   printf("nano_register_key() => %c", key);
 }
 
 struct saved_buffer {
@@ -370,6 +376,13 @@ static void suspend()
 }
 
 /*
+ * Quick and dirty control flags during development.
+ * ToDo: make params in config file
+ * */
+static int appFlagWindowCloseExits = TRUE;
+
+
+/*
  * A wrapper for SDL_WaitEvent(), which adds suspension via CTRL+Z, as well
  * as registered functions via ALT+CTRL+..., and some workarounds for the Ben
  * NanoNote.
@@ -433,6 +446,16 @@ void nano_wait_event(SDL_Event *event)
          }
       }
 #endif
+
+	  // Standard operating system 'Close' window / 'Close' app button.
+	  if(event->type == SDL_QUIT) {
+		 printf("SDL_QUIT, did you click Operating System window {close} button?\n");
+		 // fails scope problem? glk_exit();
+		 // Instead, simulate pressing the ctrl-alt-q sequence for now.
+		 if (appFlagWindowCloseExits) {
+			registered_key_func['q' - 'a']();
+		 }
+	  }
 
       return;
    }

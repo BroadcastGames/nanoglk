@@ -139,7 +139,11 @@ static const char *std_conf[] = {
 
 int main(int argc, char *argv[])
 {
+   nanoglk_log("main: ctrl-alt-q will quit the app");
+
    nano_init(argc, argv, TRUE);
+   nanoglk_log("main: after non_init");
+   printf("did nanglk_log just say... main: after non_init\n");
    nano_register_key('q', glk_exit);
    nano_register_key('l', log_line);
 
@@ -180,6 +184,7 @@ int main(int argc, char *argv[])
       glk_main();
 
    glk_exit();
+   nanoglk_log("after glk_exit()");
    
    // compiler warnings
    return 0;
