@@ -22,8 +22,8 @@
  * Wikipedia (or any other image).
  */
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include "misc/misc.h"
 
 int main(int argc, char **argv)
@@ -39,6 +39,7 @@ int main(int argc, char **argv)
    i1[3] = nano_scale_surface(i0, 160, 5 * i0->h);
    SDL_FreeSurface(i0);
 
+#ifdef SDL12A
    SDL_Surface *s = SDL_SetVideoMode( 320, 240, 24, SDL_DOUBLEBUF);
    
    for(int i = 0; i < 4; i++) {
@@ -48,7 +49,8 @@ int main(int argc, char **argv)
       SDL_FreeSurface(i1[i]);
    }
 
-   SDL_Flip(s);
+   SDL_RenderPresent(s);
+#endif
 
    SDL_Event e;
    do

@@ -420,7 +420,7 @@ static void message(SDL_Surface *surface, Uint16 **msg, Uint16 **btn,
    }
   
    free(t);
-   SDL_Flip(surface);
+   SDL_RenderPresent(surface);
 }
 
 /*
@@ -569,7 +569,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
       SDL_Rect rc = { x + cx - ox, y, 1, h };
       SDL_FillRect(surface, &rc, SDL_MapRGB(surface->format, fg.r, fg.g, fg.b));
 
-      SDL_Flip(surface);
+      SDL_RenderPresent(surface);
 
       nano_wait_event(event);
       int len = strlen16(text);
@@ -631,7 +631,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
                SDL_Rect r2 = { x, y, w, h };
                SDL_BlitSurface(ts_total, &r1, surface, &r2);
                SDL_FreeSurface(ts_total);
-               SDL_Flip(surface);
+               SDL_RenderPresent(surface);
 
                return;
             }
@@ -651,7 +651,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
             SDL_Rect r2 = { x, y, w, h };
             SDL_BlitSurface(ts_total, &r1, surface, &r2);
             SDL_FreeSurface(ts_total);
-            SDL_Flip(surface);
+            SDL_RenderPresent(surface);
 
             return;
       }

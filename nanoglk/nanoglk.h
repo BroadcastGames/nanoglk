@@ -32,8 +32,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "glk.h"
 #include "gi_dispa.h"
@@ -223,7 +223,11 @@ void nanoglk_window_put_char(winid_t win, glui32 c);
 void nanoglk_window_flush_all(void);
 glui32 nanoglk_window_get_char(winid_t win);
 glui32 nanoglk_window_get_char_uni(winid_t win);
+
+#ifdef SDL12A
 glui32 nanoglk_window_char_sdl_to_glk(SDL_keysym *keysym);
+#endif
+
 glui32 nanoglk_window_get_line(winid_t win, char *buf, glui32 maxlen,
                                glui32 initlen);
 glui32 nanoglk_window_get_line_uni(winid_t win, glui32 *buf, glui32 maxlen,

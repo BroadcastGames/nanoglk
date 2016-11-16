@@ -2,7 +2,7 @@
  * This file is part of nanoglk.
  *
  * Copyright (C) 2012 by Sebastian Geerken
- *
+ *u
  * Nanoglk is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -171,8 +171,10 @@ int main(int argc, char *argv[])
    SDL_ShowCursor(SDL_DISABLE);
 #endif
 
+#ifdef SDL12A
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(500, 50);
+#endif
    TTF_Init();
 
    init_properties();

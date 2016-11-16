@@ -154,14 +154,26 @@ void nanoglk_window_init(int width, int height, int depth)
 {
    /* set the title bar */
    //  ToDo: set to name of story or interpreter?
+#ifdef SDL12A
    SDL_WM_SetCaption("nano Glk library", "nano Glk library Hello!");
+#endif
    
+#ifdef SDL12A
    if (windowFlagSetResize) {
       nanoglk_surface = SDL_SetVideoMode(width, height, depth, SDL_RESIZABLE | SDL_DOUBLEBUF);
       // ToDo: implement resize logic to respond to user mouse events
    } else {
       nanoglk_surface = SDL_SetVideoMode(width, height, depth, SDL_DOUBLEBUF);
    }
+#endif
+    SDL_Window* window = SDL_CreateWindow("Window caption", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, height, depth, 0);
+    if(window == NULL)
+    {
+        /* Handle problem */
+        fprintf(stderr, "%s\n", SDL_GetError());
+        SDL_Quit();
+    }
+
    nano_reg_surface(&nanoglk_surface);
 
    int i;
@@ -858,7 +870,11 @@ void nanoglk_window_flush_all(void)
 
    if(root)
       flush(root);
+
+#ifdef SDL12A
    SDL_Flip(nanoglk_surface);
+#endif
+   SDL_RenderPresent(nanoglk_surface);
 }
 
 /*
@@ -923,6 +939,7 @@ glui32 nanoglk_window_get_char_uni(winid_t win)
    }
 }
 
+#ifdef SDL12A
 /*
  * Convert SDL symbols for special keys into the respective symbols defined
  * by Glk.
@@ -958,6 +975,7 @@ glui32 nanoglk_window_char_sdl_to_glk(SDL_keysym *keysym)
       return keysym->unicode;
    }
 }
+#endif
 
 /*
  * Read a Latin-1 line from a window. Called when the respective event

@@ -182,7 +182,9 @@ glui32 nanoglk_wintextgrid_get_char_uni(winid_t win)
       nano_wait_event(&event);
       switch(event.type) {
       case SDL_KEYDOWN:
-         return nanoglk_window_char_sdl_to_glk(&event.key.keysym);
+         printf("ToDo SDL2 SDL_KEYDOWN wintextgrid.c");
+         // return nanoglk_window_char_sdl_to_glk(&event.key.keysym);
+         return &event.key.keysym;
       }
    }
 }

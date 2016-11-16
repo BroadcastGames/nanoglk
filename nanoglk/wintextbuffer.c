@@ -305,7 +305,9 @@ glui32 nanoglk_wintextbuffer_get_char_uni(winid_t win)
       switch(event.type) {
       case SDL_KEYDOWN:
          user_has_read(win);
-         return nanoglk_window_char_sdl_to_glk(&event.key.keysym);
+         printf("ToDo SDL2 SDL_KEYDOWN wintextbuffer.c");
+         // return nanoglk_window_char_sdl_to_glk(&event.key.keysym);
+         return &event.key.keysym;
       }
    }
 }
@@ -601,7 +603,7 @@ void ensure_space(winid_t win, int space)
          SDL_BlitSurface(t, &r1, nanoglk_surface, &r2);
          SDL_FreeSurface(t);
 
-         SDL_Flip(nanoglk_surface);
+         SDL_RenderPresent(nanoglk_surface);
 
          wait_for_key();
 

@@ -330,19 +330,23 @@ static void handle_cont()
    SDL_ShowCursor(SDL_DISABLE);
 #endif
 
+#ifdef SDL12A
    SDL_EnableUNICODE(1);
    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+#endif
 
    for(struct saved_buffer *saved = first_saved; saved; saved = saved->next) {
       // TODO (cf. nanoglk_window_init())
+#ifdef SDL12A
       *saved->surface = SDL_SetVideoMode(saved->w, saved->h, 8 * saved->bpp, 0);
+#endif
       
       SDL_LockSurface(*saved->surface);
       memcpy((*saved->surface)->pixels,
              saved->buf, saved->w * saved->h * saved->bpp);
       SDL_UnlockSurface(*saved->surface);
       free(saved->buf);
-      SDL_Flip(*saved->surface);
+      SDL_RenderPresent(*saved->surface);
    }
 }
 
