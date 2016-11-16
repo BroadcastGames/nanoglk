@@ -166,15 +166,19 @@ void nanoglk_window_init(int width, int height, int depth)
       nanoglk_surface = SDL_SetVideoMode(width, height, depth, SDL_DOUBLEBUF);
    }
 #endif
-    SDL_Window* window = SDL_CreateWindow("Window caption", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, height, depth, 0);
-    if(window == NULL)
+    printf("window.c SDL_SetVideoMode\n");
+    nanoglk_surface = SDL_CreateWindow("Window caption", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, height, depth, 0);
+    printf("window.c SDL_SetVideoMode SDL_CreateWindow after\n");
+    if(nanoglk_surface == NULL)
     {
         /* Handle problem */
         fprintf(stderr, "%s\n", SDL_GetError());
         SDL_Quit();
     }
 
+   printf("window.c SDL_SetVideoMode SDL_CreateWindow after CHECKPOINT_A\n");
    nano_reg_surface(&nanoglk_surface);
+   printf("window.c SDL_SetVideoMode SDL_CreateWindow after CHECKPOINT_B\n");
 
    int i;
    for(i = 0; i < style_NUMSTYLES; i++) {
@@ -186,7 +190,11 @@ void nanoglk_window_init(int width, int height, int depth)
       next_grid_rev[i] = 0;
    }
 
+   printf("window.c SDL_SetVideoMode SDL_CreateWindow after CHECKPOINT_D\n");
+#ifdef SDL12B
    nano_register_key('w', print_windows);
+#endif
+   printf("window.c SDL_SetVideoMode SDL_CreateWindow after CHECKPOINT_F\n");
 }
 
 winid_t glk_window_get_root(void)
@@ -198,9 +206,12 @@ winid_t glk_window_get_root(void)
 winid_t glk_window_open(winid_t split, glui32 method, glui32 size,
                         glui32 wintype, glui32 rock)
 {
+printf("window.c glk_window_open CHECKPOINT_0_A START\n");
    winid_t win = (winid_t)nano_malloc(sizeof(struct glk_window_struct));
    nanoglk_log("glk_window_open(%p, %d, %d, %d, %d) => %p",
               split, method, size, wintype, rock, win);
+
+printf("window.c glk_window_open CHECKPOINT_0_A\n");
 
    win->stream = nanoglk_stream_new(streamtype_Window, 0);
    win->stream->x.window = win;
@@ -211,6 +222,8 @@ winid_t glk_window_open(winid_t split, glui32 method, glui32 size,
    win->rock = rock;
    win->left = win->right = NULL;
    win->cur_styl = style_Normal;
+
+printf("window.c glk_window_open CHECKPOINT_0_B\n");
    
    // Colors for styles. See comment at the beginning of this file.
    int i;
@@ -230,16 +243,25 @@ winid_t glk_window_open(winid_t split, glui32 method, glui32 size,
       break;
    }
 
+printf("window.c glk_window_open CHECKPOINT_0_C\n");
+
    winid_t pair;
    
    if(split == NULL) {
+printf("window.c glk_window_open CHECKPOINT_0_D branch0\n");
       // parent is NULL => new root window
       nano_failunless(root == NULL, "two root windows");
 
+printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTA\n");
       win->parent = NULL;
+printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTA0\n");
       win->area.x = win->area.y = 0;
+printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTA1\n");
       win->area.w = nanoglk_surface->w;
+printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTA2\n");
       win->area.h = nanoglk_surface->h;
+
+printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTB\n");
 
       root = win;
 
@@ -291,6 +313,8 @@ winid_t glk_window_open(winid_t split, glui32 method, glui32 size,
       nano_trace("new win %p: (%d, %d, %d x %d)", win, win->area.x,
                  win->area.y, win->area.w, win->area.h);
    }
+
+printf("window.c glk_window_open CHECKPOINT_0_E\n");
 
    // Further initialization depending on the type.
    switch(win->wintype) {

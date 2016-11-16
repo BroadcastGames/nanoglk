@@ -337,6 +337,7 @@ static void handle_cont()
 
    for(struct saved_buffer *saved = first_saved; saved; saved = saved->next) {
       // TODO (cf. nanoglk_window_init())
+      printf("misc.c SDL_SetVideoMode\n");
 #ifdef SDL12A
       *saved->surface = SDL_SetVideoMode(saved->w, saved->h, 8 * saved->bpp, 0);
 #endif
