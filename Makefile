@@ -4,7 +4,10 @@
 # version of gargoyle, or something different than gargoyle, some more
 # changes below may be necessary.
 
-TERPS_DIR = ../gargoyle-2011.1-sources/terps
+# TERPS_DIR = ../gargoyle-2011.1-sources/terps
+#  latest gargoyle garglk source code: https://github.com/garglk/garglk/commits/master
+#  2016-10-17
+TERPS_DIR = ../gargoyle-e3466aa3db2a917e913c67c1c5ad952b55762cad/terps
 
 # Logging. In short:
 #
@@ -105,8 +108,9 @@ NANOGLK_PARTS = nanoglk/main.o nanoglk/event.o nanoglk/window.o		\
 ALL_PARTS = $(NANOGLK_PARTS) $(FROTZ_PARTS) $(GLULXE_PARTS) $(GIT_PARTS)
 
 # This works so far for all. May be differiencated in the future.
-# note, newer compilers fail. Ubuntu 16.04 / 16.10 fail
+# Note, newer compilers fail due to ordering of parameters. Ubuntu 16.04 / 16.10 fail
 #   see: http://askubuntu.com/questions/68922/cant-compile-program-that-uses-sdl-after-upgrade-to-11-10-undefined-reference
+#   As a hack, NANOGLK_LIBS_ALL_END introduced
 CFLAGS_ALL = -Wall -std=c99 -DZTERP_GLK -DGLK -DOS_UNIX $(LOG)
 NANOGLK_LIBS_ALL = -lSDL -lSDL_ttf -lSDL_image
 NANOGLK_LIBS_ALL_END = -lSDL -lSDL_ttf -lSDL_image -lm
@@ -114,11 +118,8 @@ NANOGLK_LIBS_ALL_END = -lSDL -lSDL_ttf -lSDL_image -lm
 
 CFLAGS = $(CFLAGS_ALL) -g
 INCLUDES = -I. -Iglk
-# DUMA project for memory buffer problems http://duma.sourceforge.net/
-#  some tips on setting up? https://github.com/crosstool-ng/crosstool-ng/issues/440
-# also need to add -lm ? https://github.com/ccxvii/asstools/issues/5
 NANOGLK_LIBS = $(NANOGLK_LIBS_ALL) -lduma
-# NANOGLK_LIBS = $(NANOGLK_LIBS_ALL)
+
 
 # If the goal is "copy-nn", switch to NanoNote options.
 ifeq ($(MAKECMDGOALS), copy-nn)
