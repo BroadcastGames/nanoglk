@@ -1,0 +1,8 @@
+Using Gargoyle Garglk source code commit e3466aa3db2a917e913c67c1c5ad952b55762cad
+Ubuntu 16.10 x64
+
+1. nanogit & nanoglulx with story Six.gblorb -- exit with no message. Very brief window flash.
+2. nanogit & nanoglulx with story Molly and the Butter Thieves -- does not show left window "Useful commands", might be color text issue (black on black).
+2a. FlexWinsCommonCmdsSidebarA.gblorb
+3. rover.gblorb has problems with text colors, white on white? from the observer dialog.
+4. Wisher_Theurgist_Fatalist.gblorb seems to to recognize all input commands. "west" is rejected, even "quit".
