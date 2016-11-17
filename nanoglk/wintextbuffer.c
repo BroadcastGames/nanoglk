@@ -258,13 +258,15 @@ void add_word(winid_t win, SDL_Surface **word)
 #endif
 
 // this at least gets something on the screen
-      SDL_Texture *sdlTexture = SDL_CreateTextureFromSurface(nanoglk_output_renderer, word[i]);
-	  SDL_RenderCopy(nanoglk_output_renderer, sdlTexture, NULL, NULL);
-      SDL_RenderPresent(nanoglk_output_renderer);
+      SDL_Texture* texture = SDL_CreateTextureFromSurface(nanoglk_output_renderer, word[i]);
+	  // SDL_RenderCopy(nanoglk_output_renderer, NULL, texture, &rt);
+      SDL_RenderCopy(nanoglk_output_renderer, texture, NULL, &rs);
 
       tb->cur_x += word[i]->w;
       tb->line_height = MAX(tb->line_height, word[i]->h);
    }
+
+   SDL_RenderPresent(nanoglk_output_renderer);
 }
 
 /*
