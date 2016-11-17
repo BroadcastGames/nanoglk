@@ -155,6 +155,9 @@ void nanoglk_wintextgrid_put_char(winid_t win, glui32 c)
    if(c == '\n')
       new_line(win);
 
+// we could create a cached texture and pull compontents from it?
+// ref: https://github.com/Davidebyzero/Snipes/blob/master/sdl/console.cpp
+
    // No scrolling! Anything below the bottom border is ignored.
    if(tg->cur_y < win->area.h) {
       Uint16 str[2] = { c, 0 };

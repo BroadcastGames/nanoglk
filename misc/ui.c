@@ -371,7 +371,8 @@ static void message(SDL_Surface *surface, Uint16 **msg, Uint16 **btn,
    int wt = 0, ht = 0;
    SDL_Surface **t = (SDL_Surface**)nano_malloc(num_msg * sizeof(SDL_Surface*));
    for(int i = 0; i < num_msg; i++) {
-      t[i] = TTF_RenderUNICODE_Shaded(font, msg[i], dfg, dbg);
+printf("ui.c message %s\n", msg[i]);
+     t[i] = TTF_RenderUNICODE_Shaded(font, msg[i], dfg, dbg);
       wt = MAX(wt, t[i]->w);
       ht += t[i]->h;
    }
@@ -433,6 +434,8 @@ void nano_show_message(SDL_Surface *surface, Uint16 **msg,
 {
    Uint16 dismiss[] = { 'D', 'i', 's', 'm', 'i', 's', 's', 0 };
    Uint16 *btn[] = { dismiss, NULL };
+
+printf("ui.c nano_show_message %s\n", msg);
 
    message(surface, msg, btn, 0, dfg, dbg, font);
    
