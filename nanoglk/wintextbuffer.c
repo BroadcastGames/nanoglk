@@ -261,6 +261,8 @@ void add_word(winid_t win, SDL_Surface **word)
       SDL_Texture* texture = SDL_CreateTextureFromSurface(nanoglk_output_renderer, word[i]);
 	  // SDL_RenderCopy(nanoglk_output_renderer, NULL, texture, &rt);
       SDL_RenderCopy(nanoglk_output_renderer, texture, NULL, &rs);
+      
+      SDL_DestroyTexture(texture);
 
       tb->cur_x += word[i]->w;
       tb->line_height = MAX(tb->line_height, word[i]->h);
@@ -433,7 +435,7 @@ printf("nanoglk_wintextbuffer_get_line16 SPOT3\n");
 printf("nanoglk_wintextbuffer_get_line16 SPOT4\n");
 
    while(1) {
-	  printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT0\n");
+	  printf("wintextbuffer.c nanoglk_wintextbuffer_get_line16 while-loop SPOT0\n");
       SDL_Event event;
 #ifdef SDL12J
       nano_input_text16(nanoglk_surface, &event, text, max_len, max_char,
@@ -453,7 +455,18 @@ printf("nanoglk_wintextbuffer_get_line16 SPOT4\n");
                         win->fg[style_Input], win->bg[style_Input],
                         &state);
 
-	  printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1\n");
+	  switch (event.type) {
+      case SDL_WINDOWEVENT:
+	  	 //printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1 event.type %d hex: 0x%03x SDL_WINDOWEVENT\n", event.type, event.type);
+         break;
+      case SDL_TEXTEDITING:
+	  	 //printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1 event.type %d hex: 0x%03x SDL_TEXTEDITING 0x%03x\n", event.type, event.type, SDL_TEXTEDITING);
+         break;
+	  default:
+	  	 printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1 event.type %d hex: 0x%03x\n", event.type, event.type);
+	  	 break;
+	  }
+      
       if(event.type == SDL_KEYDOWN)
          switch(event.key.keysym.sym) {
          case SDLK_RETURN:

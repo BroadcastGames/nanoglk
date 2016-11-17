@@ -30,7 +30,7 @@
  */
 
 #include "nanoglk.h"
-#include "SDL/SDL_image.h"
+#include "SDL2/SDL_image.h"
 
 static SDL_Surface *load_image(glui32 image);
 static int get_scaled_image_size(glui32 *w, glui32 *h);

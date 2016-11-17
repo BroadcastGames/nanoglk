@@ -371,7 +371,7 @@ static void message(SDL_Surface *surface, Uint16 **msg, Uint16 **btn,
    int wt = 0, ht = 0;
    SDL_Surface **t = (SDL_Surface**)nano_malloc(num_msg * sizeof(SDL_Surface*));
    for(int i = 0; i < num_msg; i++) {
-printf("ui.c message %s\n", msg[i]);
+printf("ui.c message %s\n", msg);
      t[i] = TTF_RenderUNICODE_Shaded(font, msg[i], dfg, dbg);
       wt = MAX(wt, t[i]->w);
       ht += t[i]->h;
@@ -541,7 +541,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
       ox = *state >> 15;
    }
 
-printf("wintextbuffer.c nano_input_text16 starting while-loop\n");
+printf("ui.c nano_input_text16 starting while-loop\n");
    while(1) {
       int cx, c;
 
@@ -584,9 +584,20 @@ printf("wintextbuffer.c nano_input_text16 starting while-loop\n");
       nano_wait_event(event);
       int len = strlen16(text);
 
+// SDL1.2 --> SDL2 "You no longer get character input from SDL_KEYDOWN events. Use SDL_KEYDOWN to treat the keyboard like a 101-button joystick now. Text input comes from somewhere else."
+// SDL1.2 --> SDL2 "The new event is SDL_TEXTINPUT."
+
       switch(event->type) {
+	  case SDL_TEXTINPUT:
+          printf("ui.c SDL_TEXTINPUT\n");
+		  break;
       case SDL_KEYDOWN:
          switch(event->key.keysym.sym) {
+	     case SDLK_UP:
+	     case SDLK_DOWN:
+	        // ToDo: history feature
+	        printf("SDLK_UP / SDLK_DOWN ToDo: implement history feature.\n");
+	        break;
          case SDLK_LEFT:
             if(pos > 0)
                pos--;
@@ -620,7 +631,12 @@ printf("wintextbuffer.c nano_input_text16 starting while-loop\n");
             break;
             
          default:
+#ifdef SDL12P
             c = event->key.keysym.unicode;
+#endif
+			c = event->key.keysym.scancode;
+            printf("ui.c normal key\n");
+// this logic is no longer valid.            
             if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
                if(len < max_len) {
                   memmove(text + pos + 1, text + pos,
