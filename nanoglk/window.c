@@ -1069,8 +1069,10 @@ glui32 nanoglk_window_get_line(winid_t win, char *buf, glui32 maxlen,
       text[i] = buf[i];
    text[initlen] = 0;
 
+printf("window.c nanoglk_window_get_line INPUT CHECKPOINT_A\n");
    // ... read Uint16* (limited to Latin-1 characters) ...
    int len = get_line16(win, text, maxlen, 0xff);
+printf("window.c nanoglk_window_get_line INPUT CHECKPOINT_B\n");
 
    // ... and convert it back to char*.
    for(i = 0; text[i]; i++)
@@ -1118,12 +1120,15 @@ glui32 nanoglk_window_get_line_uni(winid_t win, glui32 *buf, glui32 maxlen,
  */
 glui32 get_line16(winid_t win, Uint16 *text, int max_len, int max_char)
 {
+	printf("get_line16\n");
    switch(win->wintype) {
    case wintype_TextBuffer:
+	printf("get_line16 TextBuffer\n");
       return nanoglk_wintextbuffer_get_line16(win, text, max_len, max_char);
       break;
 
    case wintype_TextGrid:
+	printf("get_line16 TextGrid\n");
       return nanoglk_wintextgrid_get_line16(win, text, max_len, max_char);
       break;
 

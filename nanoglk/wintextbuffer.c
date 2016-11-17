@@ -345,16 +345,20 @@ glui32 nanoglk_wintextbuffer_get_line16(winid_t win, Uint16 *text,
 {
    struct textbuffer *tb = (struct textbuffer*)win->data;
 
+printf("nanoglk_wintextbuffer_get_line16\n");
    nanoglk_wintextbuffer_flush(win); /* Not neccessary currently, since this
                                         function is always called from
                                         glk_select(), but we do not want to
                                         rely on this. */
 
+printf("nanoglk_wintextbuffer_get_line16 SPOT0\n");
    // Show the pending space and ensure a minimal width for the input.
    int w_space =
       tb->space_styl != -1 ?
       nanoglk_buffer_font[tb->space_styl]->space_width : 0;
    nano_trace("win %p (get line): space width = %d", win, w_space);
+
+printf("nanoglk_wintextbuffer_get_line16 SPOT1\n");
 
    // Minimal width for the input: a third of the window width, but at least
    // 10 pixels, unless the window is less than 10 pixels wide.
@@ -367,12 +371,16 @@ glui32 nanoglk_wintextbuffer_get_line16(winid_t win, Uint16 *text,
       // word fits -> only add space before
       tb->cur_x += w_space;
 
+printf("nanoglk_wintextbuffer_get_line16 SPOT2\n");
+
    if(num_history >= MAX_HISTORY) {
       // History buffer is full: remove oldest entry.
       free(history[0]);
       memmove(history, history + 1, (MAX_HISTORY - 1) * sizeof(Uint16*));
       num_history = MAX_HISTORY - 1;
    }
+
+printf("nanoglk_wintextbuffer_get_line16 SPOT3\n");
 
    /*
     * Dealing with the input history is done here (TODO should perhaps
@@ -411,8 +419,12 @@ glui32 nanoglk_wintextbuffer_get_line16(winid_t win, Uint16 *text,
    for(int i = 0; i < MAX_HISTORY; i++)
       history_repl[i] = NULL;
 
+printf("nanoglk_wintextbuffer_get_line16 SPOT4\n");
+
    while(1) {
+	  printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT0\n");
       SDL_Event event;
+#ifdef SDL12J
       nano_input_text16(nanoglk_surface, &event, text, max_len, max_char,
                         win->area.x + tb->cur_x, win->area.y + tb->cur_y,
                         win->area.w - tb->cur_x,
@@ -420,6 +432,17 @@ glui32 nanoglk_wintextbuffer_get_line16(winid_t win, Uint16 *text,
                         nanoglk_buffer_font[style_Input]->font,
                         win->fg[style_Input], win->bg[style_Input],
                         &state);
+#endif
+
+      nano_input_text16(nanoglk_surface, &event, text, max_len, max_char,
+                        win->area.x + tb->cur_x, win->area.y + tb->cur_y,
+                        win->area.w - tb->cur_x,
+                        nanoglk_buffer_font[style_Input]->text_height,
+                        nanoglk_buffer_font[style_Input]->font,
+                        win->fg[style_Input], win->bg[style_Input],
+                        &state);
+
+	  printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1\n");
       if(event.type == SDL_KEYDOWN)
          switch(event.key.keysym.sym) {
          case SDLK_RETURN:

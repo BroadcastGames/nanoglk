@@ -538,6 +538,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
       ox = *state >> 15;
    }
 
+printf("wintextbuffer.c nano_input_text16 starting while-loop\n");
    while(1) {
       int cx, c;
 
@@ -558,18 +559,24 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
          ox = cx;
 
       SDL_Rect rs = { x, y, w, h };
+#ifdef SDL12P
       SDL_FillRect(surface, &rs, SDL_MapRGB(surface->format, bg.r, bg.g, bg.b));
+#endif
 
       SDL_Surface *ts_total = TTF_RenderUNICODE_Shaded(font, text, fg, bg);
       SDL_Rect r1 = { ox, 0, w, h };
       SDL_Rect r2 = { x, y, w, h };
+#ifdef SDL12P
       SDL_BlitSurface(ts_total, &r1, surface, &r2);
+#endif
       SDL_FreeSurface(ts_total);
 
       SDL_Rect rc = { x + cx - ox, y, 1, h };
+#ifdef SDL12P
       SDL_FillRect(surface, &rc, SDL_MapRGB(surface->format, fg.r, fg.g, fg.b));
 
       SDL_RenderPresent(surface);
+#endif
 
       nano_wait_event(event);
       int len = strlen16(text);
@@ -624,15 +631,20 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
                   *state = pos | (ox << 15);
 
                SDL_Rect rs = { x, y, w, h};
+#ifdef SDL12P
                SDL_FillRect(surface, &rs, SDL_MapRGB(surface->format,
                                                      bg.r, bg.g, bg.b));
+#endif
                ts_total = TTF_RenderUNICODE_Shaded(font, text, fg, bg);
                SDL_Rect r1 = { ox, 0, w, h };
                SDL_Rect r2 = { x, y, w, h };
+#ifdef SDL12P
                SDL_BlitSurface(ts_total, &r1, surface, &r2);
+#endif
                SDL_FreeSurface(ts_total);
+#ifdef SDL12P
                SDL_RenderPresent(surface);
-
+#endif
                return;
             }
             break;
@@ -644,15 +656,20 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
                *state = pos | (ox << 15);
 
             SDL_Rect rs = { x, y, w, h};
+#ifdef SDL12P
             SDL_FillRect(surface, &rs, SDL_MapRGB(surface->format,
                                                   bg.r, bg.g, bg.b));
+#endif
             ts_total = TTF_RenderUNICODE_Shaded(font, text, fg, bg);
             SDL_Rect r1 = { ox, 0, w, h };
             SDL_Rect r2 = { x, y, w, h };
+#ifdef SDL12P
             SDL_BlitSurface(ts_total, &r1, surface, &r2);
+#endif
             SDL_FreeSurface(ts_total);
+#ifdef SDL12P
             SDL_RenderPresent(surface);
-
+#endif
             return;
       }
    }
