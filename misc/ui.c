@@ -695,7 +695,8 @@ printf("ui.c nano_input_text16 starting while-loop\n");
             break;
          }
          break;
-         
+
+// ToDo: does this logic redraw every unmatched event, even a mouse or window move event? Redo the rectangle?         
          default:
             if(state)
                *state = pos | (ox << 15);
