@@ -87,8 +87,11 @@ static Uint16* history[MAX_HISTORY];
  */
 void nanoglk_wintextbuffer_init(winid_t win)
 {
+   printf("wintextbuffer.c nanoglk_wintextbuffer_init malloc\n");
    win->data = nano_malloc(sizeof(struct textbuffer));
+   printf("wintextbuffer.c nanoglk_wintextbuffer_init ready to clear\n");
    nanoglk_wintextbuffer_clear(win);
+   printf("wintextbuffer.c nanoglk_wintextbuffer_init after clear\n");
 }
 
 /*
@@ -96,15 +99,36 @@ void nanoglk_wintextbuffer_init(winid_t win)
  */
 void nanoglk_wintextbuffer_clear(winid_t win)
 {
+   printf("wintextbuffer.c nanoglk_wintextbuffer_clear start\n");
    struct textbuffer *tb = (struct textbuffer*)win->data;
+   printf("wintextbuffer.c nanoglk_wintextbuffer_clear start CHECKPOINT_A\n");
    tb->cur_x = tb->cur_y = tb->line_height = tb->last_line_height
       = tb->curword_len = tb->read_until = 0;
+   printf("wintextbuffer.c nanoglk_wintextbuffer_clear start CHECKPOINT_B\n");
    tb->space_styl = -1;
    nano_trace("win %p (clear): space_styl = %d", win, tb->space_styl);
+   printf("wintextbuffer.c nanoglk_wintextbuffer_clear start CHECKPOINT_C\n");
+   
+#ifdef SDL12C
    SDL_FillRect(nanoglk_surface, &win->area,
                 SDL_MapRGB(nanoglk_surface->format,
                            win->bg[win->cur_styl].r, win->bg[win->cur_styl].g,
                            win->bg[win->cur_styl].b));
+#endif
+// This seems to clear the screen to the specified color, skip for now?
+/*
+   SDL_FillRect(nanoglk_output_texture, &win->area,
+                SDL_MapRGB(nanoglk_surface->format,
+                           win->bg[win->cur_styl].r, win->bg[win->cur_styl].g,
+                           win->bg[win->cur_styl].b));
+*/
+// You can visibly see this blacks thescreen.
+   // SDL_SetRenderDrawColor(nanoglk_output_renderer, 255, 0, 0, 255);
+   SDL_RenderClear(nanoglk_output_renderer);
+   SDL_RenderCopy(nanoglk_output_renderer, nanoglk_output_texture, NULL, NULL);
+   SDL_RenderPresent(nanoglk_output_renderer);
+
+   printf("wintextbuffer.c nanoglk_wintextbuffer_clear start CHECKPOINT_D\n");
 }
 
 /*

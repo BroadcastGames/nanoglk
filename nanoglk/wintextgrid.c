@@ -63,11 +63,13 @@ void nanoglk_wintextgrid_clear(winid_t win)
    struct textgrid *tg = (struct textgrid*)win->data;
    tg->cur_x = tg->cur_y = 0;
 
+#ifdef SDL12C
    // The current style is used for the background.
    SDL_FillRect(nanoglk_surface, &win->area,
                 SDL_MapRGB(nanoglk_surface->format,
                            win->bg[win->cur_styl].r, win->bg[win->cur_styl].g,
                            win->bg[win->cur_styl].b));
+#endif
 }
 
 /*

@@ -50,6 +50,10 @@
 #include "nanoglk.h"
 
 SDL_Surface *nanoglk_surface; // The SDL surface representing the screen.
+// ToDo: this should be a struct, but right now we have a single window.
+SDL_Window *nanoglk_output_window;
+SDL_Renderer *nanoglk_output_renderer;
+SDL_Texture *nanoglk_output_texture;
 static winid_t root = NULL;   // Obviously, the root window.
 
 // Thickness of borders between windows. (Simple solid borders.)
@@ -165,19 +169,37 @@ void nanoglk_window_init(int width, int height, int depth)
    } else {
       nanoglk_surface = SDL_SetVideoMode(width, height, depth, SDL_DOUBLEBUF);
    }
+
+   nano_reg_surface(&nanoglk_surface);
 #endif
-    printf("window.c SDL_SetVideoMode\n");
-    nanoglk_surface = SDL_CreateWindow("Window caption", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, height, depth, 0);
-    printf("window.c SDL_SetVideoMode SDL_CreateWindow after\n");
-    if(nanoglk_surface == NULL)
-    {
-        /* Handle problem */
-        fprintf(stderr, "%s\n", SDL_GetError());
-        SDL_Quit();
-    }
+
+   printf("window.c SDL_SetVideoMode SDL_CreateWindow %d x %d\n", width, height);
+   nanoglk_output_window = SDL_CreateWindow("Window caption", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
+   printf("window.c SDL_SetVideoMode SDL_CreateWindow after\n");
+   if(nanoglk_output_window == NULL) {
+      /* Handle problem */
+      fprintf(stderr, "%s\n", SDL_GetError());
+      SDL_Quit();
+   }
+   nanoglk_output_renderer = SDL_CreateRenderer(nanoglk_output_window, -1, 0);
+   if(nanoglk_output_renderer == NULL) {
+      /* Handle problem */
+      fprintf(stderr, "%s\n", SDL_GetError());
+      SDL_Quit();
+   }
+   nanoglk_output_texture = SDL_CreateTexture(nanoglk_output_renderer,
+      SDL_PIXELFORMAT_ARGB8888,
+      SDL_TEXTUREACCESS_STREAMING,
+      width, height);
+   if(nanoglk_output_texture == NULL) {
+      /* Handle problem */
+      fprintf(stderr, "%s\n", SDL_GetError());
+      SDL_Quit();
+   }
 
    printf("window.c SDL_SetVideoMode SDL_CreateWindow after CHECKPOINT_A\n");
-   nano_reg_surface(&nanoglk_surface);
+   // ToDo: equal to nano_reg_surface for saving window content
+   // nano_reg_surface(&nanoglk_surface);
    printf("window.c SDL_SetVideoMode SDL_CreateWindow after CHECKPOINT_B\n");
 
    int i;
@@ -257,9 +279,13 @@ printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTA\n");
 printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTA0\n");
       win->area.x = win->area.y = 0;
 printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTA1\n");
+#ifdef SDL12A
       win->area.w = nanoglk_surface->w;
 printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTA2\n");
       win->area.h = nanoglk_surface->h;
+#endif
+
+	  SDL_QueryTexture(nanoglk_output_texture, NULL, NULL, &win->area.w, &win->area.h);
 
 printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTB\n");
 
@@ -270,6 +296,7 @@ printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTB\n");
       nano_trace("[glk_window_open] root %p: (%d, %d, %d x %d)",
                  win, win->area.x, win->area.y, win->area.w, win->area.h);
    } else {
+printf("window.c glk_window_open CHECKPOINT_0_D branch1\n");
       // Create a pair window. The old parent "split" becomes the left
       // child, the newly created becomes the right child. (See also
       // comment on these members in "nanoglk.h".)
@@ -306,7 +333,11 @@ printf("window.c glk_window_open CHECKPOINT_0_D branch0 SPOTB\n");
       window_resize(split, &split_area);
       win->area = win_area;
 
+printf("window.c glk_window_open CHECKPOINT_0_D branch1 SPOTA\n");
+
       window_draw_border(pair);
+
+printf("window.c glk_window_open CHECKPOINT_0_D branch1 SPOTB\n");
 
       nano_trace("split %p: (%d, %d, %d x %d)", split, split->area.x,
                 split->area.y, split->area.w, split->area.h);
@@ -319,10 +350,13 @@ printf("window.c glk_window_open CHECKPOINT_0_E\n");
    // Further initialization depending on the type.
    switch(win->wintype) {
    case wintype_TextBuffer:
+printf("window.c glk_window_open CHECKPOINT_0_E PATH0\n");
       nanoglk_wintextbuffer_init(win);
+printf("window.c glk_window_open CHECKPOINT_0_E PATH0A\n");
       break;
 
    case wintype_TextGrid:
+printf("window.c glk_window_open CHECKPOINT_0_E PATH1\n");
       nanoglk_wintextgrid_init(win);
       break;
 
@@ -331,12 +365,18 @@ printf("window.c glk_window_open CHECKPOINT_0_E\n");
       break;
    }
 
+printf("window.c glk_window_open CHECKPOINT_0_F\n");
+
    if(pair)
       pair->disprock = nanoglk_call_regi_obj(pair, gidisp_Class_Window);
+
+printf("window.c glk_window_open CHECKPOINT_0_G\n");
 
    win->stream->disprock
       = nanoglk_call_regi_obj(win->stream, gidisp_Class_Stream);
    win->disprock = nanoglk_call_regi_obj(win, gidisp_Class_Window);
+   
+printf("window.c glk_window_open CHECKPOINT_0_H\n");
    
    return win;
 }
@@ -658,11 +698,15 @@ void window_rearrange(winid_t pair)
  */
 void window_draw_border(winid_t pair)
 {
+   printf("window.c window_draw_border\n");
    winid_t win = pair->right;
    if(win && (win->method & winmethod_BorderMask) == winmethod_Border) {
+      printf("window.c window_draw_border BRANCH_0\n");
       // TODO: Which color? Should always be the same. Or, at least, it
       // should be predictable.
       SDL_Color c = nanoglk_buffer_font[style_Normal]->fg;
+
+#ifdef SDL12F
       switch(win->method & winmethod_DirMask) {
       case winmethod_Above:
          nano_fill_rect(nanoglk_surface, c,
@@ -688,6 +732,7 @@ void window_draw_border(winid_t pair)
                         BORDER_WIDTH, win->area.h);
          break;
       }
+#endif
    }
 }
 

@@ -202,6 +202,9 @@ extern SDL_Color nanoglk_ui_list_a_fg_color, nanoglk_ui_list_a_bg_color;
 extern int nanoglk_screen_width, nanoglk_screen_height, nanoglk_screen_depth;
 extern int nanoglk_filesel_width, nanoglk_filesel_height;
 extern SDL_Surface *nanoglk_surface;
+extern SDL_Window *nanoglk_output_window;
+extern SDL_Renderer *nanoglk_output_renderer;
+extern SDL_Texture *nanoglk_output_texture;
 
 extern double nanoglk_factor_horizontal_fixed, nanoglk_factor_vertical_fixed;
 extern double nanoglk_factor_horizontal_proportional;
