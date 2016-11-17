@@ -943,7 +943,7 @@ void nanoglk_window_flush_all(void)
 #ifdef SDL12A
    SDL_Flip(nanoglk_surface);
 #endif
-   SDL_RenderPresent(nanoglk_surface);
+   SDL_RenderPresent(nanoglk_output_renderer);
 }
 
 /*

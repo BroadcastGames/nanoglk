@@ -630,6 +630,9 @@ void new_line(winid_t win)
  */
 void ensure_space(winid_t win, int space)
 {
+
+printf("wintextbuffer.c ensure_space START\n");
+
    // TODO Rework needed.
    struct textbuffer *tb = (struct textbuffer*)win->data;
 
@@ -648,12 +651,16 @@ void ensure_space(winid_t win, int space)
                                      more, win->fg[style_Input],
                                      win->bg[style_Input]);
 
+printf("wintextbuffer.c ensure_space CHECKPOINT_A\n");
+
          nano_save_window(nanoglk_surface,
                           win->area.x, win->area.y + win->area.h - t->h,
                           win->area.w, t->h);
          nano_fill_rect(nanoglk_surface, win->bg[win->cur_styl],
                         win->area.x, win->area.y + win->area.h - t->h,
                         win->area.w, t->h);
+
+printf("wintextbuffer.c ensure_space CHECKPOINT_B\n");
          
          SDL_Rect r1 = { 0, 0, t->w, t->h };
          SDL_Rect r2 = { win->area.x, win->area.y + win->area.h - t->h,
@@ -661,7 +668,9 @@ void ensure_space(winid_t win, int space)
          SDL_BlitSurface(t, &r1, nanoglk_surface, &r2);
          SDL_FreeSurface(t);
 
-         SDL_RenderPresent(nanoglk_surface);
+printf("wintextbuffer.c ensure_space CHECKPOINT_C\n");
+
+         SDL_RenderPresent(nanoglk_output_renderer);
 
          wait_for_key();
 
@@ -670,21 +679,33 @@ void ensure_space(winid_t win, int space)
 
          nano_restore_window(nanoglk_surface);
       }
+
+printf("wintextbuffer.c ensure_space CHECKPOINT_K\n");
       
       // Copy (scroll down).
       SDL_Rect r1 = { win->area.x, win->area.y + d,
                       win->area.w, win->area.h - d };
       SDL_Rect r2 = { win->area.x, win->area.y, win->area.w, win->area.h - d };
+
+#ifdef SDL12R
       SDL_BlitSurface(nanoglk_surface, &r1, nanoglk_surface, &r2);
+#endif
+
+	  SDL_RenderCopy(nanoglk_output_renderer, &r1, nanoglk_output_texture, &r2);
+	  SDL_RenderPresent(nanoglk_output_renderer);
 
       // Clear new, free area.
       SDL_Rect r = { win->area.x, win->area.y + win->area.h - d,
                      win->area.w, d };
+
+// skip clearing
+#ifdef SDL12R
       SDL_FillRect(nanoglk_surface, &r,
                    SDL_MapRGB(nanoglk_surface->format,
                               win->bg[win->cur_styl].r,
                               win->bg[win->cur_styl].g,
                               win->bg[win->cur_styl].b));
+#endif
 
       tb->cur_y -= d;
       tb->read_until -= d;
