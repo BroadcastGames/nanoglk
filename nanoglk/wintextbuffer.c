@@ -349,6 +349,8 @@ glui32 nanoglk_wintextbuffer_get_char_uni(winid_t win)
    }
 }
 
+static int devLog_winTextBuf_getLin16 = FALSE;
+
 /*
  * Read any line from a text buffer window. For most arguments, see
  * nano_input_text16() in "ui.h". Return the length.
@@ -358,12 +360,14 @@ glui32 nanoglk_wintextbuffer_get_line16(winid_t win, Uint16 *text,
 {
    struct textbuffer *tb = (struct textbuffer*)win->data;
 
+if (devLog_winTextBuf_getLin16)
 printf("nanoglk_wintextbuffer_get_line16\n");
    nanoglk_wintextbuffer_flush(win); /* Not neccessary currently, since this
                                         function is always called from
                                         glk_select(), but we do not want to
                                         rely on this. */
 
+if (devLog_winTextBuf_getLin16)
 printf("nanoglk_wintextbuffer_get_line16 SPOT0\n");
    // Show the pending space and ensure a minimal width for the input.
    int w_space =
@@ -371,6 +375,7 @@ printf("nanoglk_wintextbuffer_get_line16 SPOT0\n");
       nanoglk_buffer_font[tb->space_styl]->space_width : 0;
    nano_trace("win %p (get line): space width = %d", win, w_space);
 
+if (devLog_winTextBuf_getLin16)
 printf("nanoglk_wintextbuffer_get_line16 SPOT1\n");
 
    // Minimal width for the input: a third of the window width, but at least
@@ -384,6 +389,7 @@ printf("nanoglk_wintextbuffer_get_line16 SPOT1\n");
       // word fits -> only add space before
       tb->cur_x += w_space;
 
+if (devLog_winTextBuf_getLin16)
 printf("nanoglk_wintextbuffer_get_line16 SPOT2\n");
 
    if(num_history >= MAX_HISTORY) {
@@ -393,6 +399,7 @@ printf("nanoglk_wintextbuffer_get_line16 SPOT2\n");
       num_history = MAX_HISTORY - 1;
    }
 
+if (devLog_winTextBuf_getLin16)
 printf("nanoglk_wintextbuffer_get_line16 SPOT3\n");
 
    /*
@@ -432,10 +439,11 @@ printf("nanoglk_wintextbuffer_get_line16 SPOT3\n");
    for(int i = 0; i < MAX_HISTORY; i++)
       history_repl[i] = NULL;
 
+if (devLog_winTextBuf_getLin16)
 printf("nanoglk_wintextbuffer_get_line16 SPOT4\n");
 
    while(1) {
-	  printf("wintextbuffer.c nanoglk_wintextbuffer_get_line16 while-loop SPOT0\n");
+      // printf("wintextbuffer.c nanoglk_wintextbuffer_get_line16 while-loop SPOT0\n");
       SDL_Event event;
 #ifdef SDL12J
       nano_input_text16(nanoglk_surface, &event, text, max_len, max_char,
@@ -455,17 +463,17 @@ printf("nanoglk_wintextbuffer_get_line16 SPOT4\n");
                         win->fg[style_Input], win->bg[style_Input],
                         &state);
 
-	  switch (event.type) {
+      switch (event.type) {
       case SDL_WINDOWEVENT:
-	  	 //printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1 event.type %d hex: 0x%03x SDL_WINDOWEVENT\n", event.type, event.type);
+         //printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1 event.type %d hex: 0x%03x SDL_WINDOWEVENT\n", event.type, event.type);
          break;
       case SDL_TEXTEDITING:
-	  	 //printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1 event.type %d hex: 0x%03x SDL_TEXTEDITING 0x%03x\n", event.type, event.type, SDL_TEXTEDITING);
+         //printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1 event.type %d hex: 0x%03x SDL_TEXTEDITING 0x%03x\n", event.type, event.type, SDL_TEXTEDITING);
          break;
-	  default:
-	  	 printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1 event.type %d hex: 0x%03x\n", event.type, event.type);
-	  	 break;
-	  }
+      default:
+         printf("nanoglk_wintextbuffer_get_line16 while-loop SPOT1 event.type %d hex: 0x%03x\n", event.type, event.type);
+         break;
+      }
       
       if(event.type == SDL_KEYDOWN)
          switch(event.key.keysym.sym) {
@@ -635,6 +643,8 @@ void new_line(winid_t win)
    nano_trace("win %p (new line): space_styl = %d", win, tb->space_styl);
 }
 
+static int devLog_EnsureSpace = FALSE;
+
 /*
  * Makes sure that there is some space at the bottom of the window. If
  * there is not enough space, scroll down. Also, make sure that the
@@ -644,6 +654,7 @@ void new_line(winid_t win)
 void ensure_space(winid_t win, int space)
 {
 
+if (devLog_EnsureSpace)
 printf("wintextbuffer.c ensure_space START\n");
 
    // TODO Rework needed.
@@ -652,6 +663,7 @@ printf("wintextbuffer.c ensure_space START\n");
    nano_trace("ensure_space(%p, %d) [cur_y = %d]", win, space, tb->cur_y);
    
    if(tb->cur_y + space > win->area.h) {
+      printf("wintextbuffer.c ensure_space SCROLL_DO_NOW0\n");
       // Not enough space.
       int d = tb->cur_y + space - win->area.h; // What is missing.
 
@@ -704,8 +716,8 @@ printf("wintextbuffer.c ensure_space CHECKPOINT_K\n");
       SDL_BlitSurface(nanoglk_surface, &r1, nanoglk_surface, &r2);
 #endif
 
-	  SDL_RenderCopy(nanoglk_output_renderer, &r1, nanoglk_output_texture, &r2);
-	  SDL_RenderPresent(nanoglk_output_renderer);
+      SDL_RenderCopy(nanoglk_output_renderer, &r1, nanoglk_output_texture, &r2);
+      SDL_RenderPresent(nanoglk_output_renderer);
 
       // Clear new, free area.
       SDL_Rect r = { win->area.x, win->area.y + win->area.h - d,

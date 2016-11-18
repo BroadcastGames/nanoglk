@@ -491,6 +491,8 @@ int nano_ask_yes_no(SDL_Surface *surface, Uint16 **msg, int default_answer,
    }
 }
 
+static int devLog_inputText16 = FALSE;
+
 /*
  * Lets the user input text. This function returns as soon as the user has input
  * something which is not processed here; this way, other keys (like UP and DOWN
@@ -541,6 +543,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
       ox = *state >> 15;
    }
 
+if (devLog_inputText16)
 printf("ui.c nano_input_text16 starting while-loop\n");
    while(1) {
       int cx, c;

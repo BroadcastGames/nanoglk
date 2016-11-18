@@ -184,7 +184,8 @@ void nanoglk_window_init(int width, int height, int depth)
    nanoglk_output_renderer = SDL_CreateRenderer(nanoglk_output_window, -1, 0);
    if(nanoglk_output_renderer == NULL) {
       /* Handle problem */
-      fprintf(stderr, "%s\n", SDL_GetError());
+      fprintf(stderr, "RENDERER %s\n", SDL_GetError());
+      SDL_ShowSimpleMessageBox(0, "Renderer init error", SDL_GetError(), nanoglk_output_window);
       SDL_Quit();
    }
    nanoglk_output_texture = SDL_CreateTexture(nanoglk_output_renderer,
@@ -193,7 +194,8 @@ void nanoglk_window_init(int width, int height, int depth)
       width, height);
    if(nanoglk_output_texture == NULL) {
       /* Handle problem */
-      fprintf(stderr, "%s\n", SDL_GetError());
+      fprintf(stderr, "TEXTURE %s\n", SDL_GetError());
+      SDL_ShowSimpleMessageBox(0, "Texture init error", SDL_GetError(), nanoglk_output_window);
       SDL_Quit();
    }
 
