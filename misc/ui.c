@@ -588,12 +588,13 @@ printf("ui.c nano_input_text16 starting while-loop\n");
 // SDL1.2 --> SDL2 "The new event is SDL_TEXTINPUT."
 
       switch(event->type) {
-	  case SDL_TEXTINPUT:
-          printf("ui.c SDL_TEXTINPUT '%s'\n", event->text.text);
+      case SDL_TEXTINPUT:
+         printf("ui.c SDL_TEXTINPUT '%s'\n", event->text.text);
 
-          c = event->text.text;
+         c = event->text.text;
 // ToDo: this logic assumes Uint16, really UTF-8 can have 3 or more bytes. But Inform7 is 16-bit currently.
             if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
+               printf("ui.c SDL_TEXTINPUT brach0");
                if(len < max_len) {
                   memmove(text + pos + 1, text + pos,
                           sizeof(Uint16) * (len - pos + 1));
@@ -602,6 +603,7 @@ printf("ui.c nano_input_text16 starting while-loop\n");
                }
             }
             else {
+               printf("ui.c SDL_TEXTINPUT brach1");
                if(state)
                   *state = pos | (ox << 15);
 
@@ -621,15 +623,16 @@ printf("ui.c nano_input_text16 starting while-loop\n");
                SDL_RenderPresent(surface);
 #endif
                return;
-		   }
-		  break;
+        }
+        break;
       case SDL_KEYDOWN:
-         switch(event->key.keysym.sym) {
-	     case SDLK_UP:
-	     case SDLK_DOWN:
-	        // ToDo: history feature
-	        printf("SDLK_UP / SDLK_DOWN ToDo: implement history feature.\n");
-	        break;
+        printf("ui.c SDL_KEYDOWN\n");
+        switch(event->key.keysym.sym) {
+        case SDLK_UP:
+        case SDLK_DOWN:
+           // ToDo: history feature
+           printf("SDLK_UP / SDLK_DOWN ToDo: implement history feature.\n");
+           break;
          case SDLK_LEFT:
             if(pos > 0)
                pos--;
@@ -663,9 +666,10 @@ printf("ui.c nano_input_text16 starting while-loop\n");
             break;
             
          default:
+            printf("ui.c KEY_DOWN default\n");
 #ifdef SDL12P
             c = event->key.keysym.unicode;
-			c = event->key.keysym.scancode;
+            c = event->key.keysym.scancode;
             printf("ui.c normal key\n");
 // this logic is no longer valid.
             if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
@@ -677,19 +681,21 @@ printf("ui.c nano_input_text16 starting while-loop\n");
                }
             }
             else {
+#endif
                if(state)
                   *state = pos | (ox << 15);
 
                SDL_Rect rs = { x, y, w, h};
-               SDL_FillRect(surface, &rs, SDL_MapRGB(surface->format,
-                                                     bg.r, bg.g, bg.b));
+//               SDL_FillRect(surface, &rs, SDL_MapRGB(surface->format,
+//                                                     bg.r, bg.g, bg.b));
                ts_total = TTF_RenderUNICODE_Shaded(font, text, fg, bg);
                SDL_Rect r1 = { ox, 0, w, h };
                SDL_Rect r2 = { x, y, w, h };
-               SDL_BlitSurface(ts_total, &r1, surface, &r2);
+//               SDL_BlitSurface(ts_total, &r1, surface, &r2);
                SDL_FreeSurface(ts_total);
-               SDL_RenderPresent(surface);
+//               SDL_RenderPresent(surface);
                return;
+#ifdef SDL12P
             }
 #endif
             break;
