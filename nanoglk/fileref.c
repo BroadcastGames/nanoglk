@@ -100,7 +100,7 @@ frefid_t glk_fileref_create_by_prompt(glui32 usage, glui32 fmode, glui32 rock)
 
    Uint16 *title16 = strdup16fromutf8(title8);
    char *name = 
-      nano_input_file(cwd, title16, nanoglk_surface,
+      nano_input_file(cwd, title16, nanoglk_mainwindow->nanoglk_surface,
                       nanoglk_ui_font->font, nanoglk_ui_font->text_height,
                       nanoglk_ui_font->fg, nanoglk_ui_font->bg,
                       nanoglk_ui_list_i_fg_color, nanoglk_ui_list_i_bg_color,

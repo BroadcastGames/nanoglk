@@ -64,8 +64,8 @@ void nanoglk_wintextgrid_clear(winid_t win)
    tg->cur_x = tg->cur_y = 0;
 
    // The current style is used for the background.
-   SDL_FillRect(nanoglk_surface, &win->area,
-                SDL_MapRGB(nanoglk_surface->format,
+   SDL_FillRect(nanoglk_mainwindow->nanoglk_surface, &win->area,
+                SDL_MapRGB(nanoglk_mainwindow->nanoglk_surface->format,
                            win->bg[win->cur_styl].r, win->bg[win->cur_styl].g,
                            win->bg[win->cur_styl].b));
 }
@@ -83,18 +83,18 @@ void nanoglk_wintextgrid_resize(winid_t win, SDL_Rect *area)
       SDL_CreateRGBSurface(SDL_SWSURFACE, r2.w, r2.h, nanoglk_screen_depth,
                            0, 0, 0, 0); /* TODO Argument [RGB]mask? Currently
                                            passed 0. */
-   SDL_BlitSurface(nanoglk_surface, &r1, s, &r2);
+   SDL_BlitSurface(nanoglk_mainwindow->nanoglk_surface, &r1, s, &r2);
 
    win->area = *area;
    // Clear new area ...
-   SDL_FillRect(nanoglk_surface, &win->area,
-                SDL_MapRGB(nanoglk_surface->format,
+   SDL_FillRect(nanoglk_mainwindow->nanoglk_surface, &win->area,
+                SDL_MapRGB(nanoglk_mainwindow->nanoglk_surface->format,
                            win->bg[win->cur_styl].r, win->bg[win->cur_styl].g,
                            win->bg[win->cur_styl].b));
 
    // ... and copy the old contents.
    SDL_Rect r3 = { win->area.x, win->area.y, r1.w, r2.w };
-   SDL_BlitSurface(s, &r2, nanoglk_surface, &r3);
+   SDL_BlitSurface(s, &r2, nanoglk_mainwindow->nanoglk_surface, &r3);
    SDL_FreeSurface(s);
 
    // (One could also copy directly, and clear new areas, when the window
@@ -162,7 +162,7 @@ void nanoglk_wintextgrid_put_char(winid_t win, glui32 c)
                                   win->bg[win->cur_styl]);
       SDL_Rect r1 = { 0, 0, gw, gh };
       SDL_Rect r2 = { tg->cur_x, tg->cur_y, gw, gh };
-      SDL_BlitSurface(t, &r1, nanoglk_surface, &r2);
+      SDL_BlitSurface(t, &r1, nanoglk_mainwindow->nanoglk_surface, &r2);
       SDL_FreeSurface(t);
 
       tg->cur_x += gw;

@@ -115,14 +115,14 @@ SDL_Surface *load_image(glui32 image)
 int get_scaled_image_size(glui32 *w, glui32 *h)
 {
    int scale = 0;
-   if(*w > nanoglk_surface->w) {
-      *h = *h * nanoglk_surface->w / *w;
-      *w = nanoglk_surface->w;
+   if(*w > nanoglk_mainwindow->nanoglk_surface->w) {
+      *h = *h * nanoglk_mainwindow->nanoglk_surface->w / *w;
+      *w = nanoglk_mainwindow->nanoglk_surface->w;
       scale = 1;
    }
-   if(*h > nanoglk_surface->h) {
-      *w = *w * nanoglk_surface->h / *h;
-      *h = nanoglk_surface->h;
+   if(*h > nanoglk_mainwindow->nanoglk_surface->h) {
+      *w = *w * nanoglk_mainwindow->nanoglk_surface->h / *h;
+      *h = nanoglk_mainwindow->nanoglk_surface->h;
       scale = 1;
    }
    return scale;

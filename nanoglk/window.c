@@ -49,11 +49,8 @@
 
 #include "nanoglk.h"
 
-SDL_Surface *nanoglk_surface; // The SDL surface representing the screen.
-// ToDo: this should be a struct, but right now we have a single window.
-SDL_Window *nanoglk_output_window;
-SDL_Renderer *nanoglk_output_renderer;
-SDL_Texture *nanoglk_output_texture;
+struct sdl_window_holder *nanoglk_mainwindow;
+
 // ToDo: rename this variable to rootWindow, and what kind of window is it - Glk or SDL?
 static winid_t root = NULL;   // Obviously, the root window.
 
@@ -78,6 +75,18 @@ static char next_buffer_rev[style_NUMSTYLES];
 static SDL_Color next_grid_fg[style_NUMSTYLES];
 static SDL_Color next_grid_bg[style_NUMSTYLES];
 static char next_grid_rev[style_NUMSTYLES];
+
+
+/*
+ * Create a new SDL_Window wrapper
+ */
+static struct sdl_window_holder *new_sdl_window_holder()
+{
+   struct sdl_window_holder *holder =
+      (struct sdl_window_holder*)nano_malloc(sizeof(struct sdl_window_holder));
+
+   return holder;
+}
 
 /*
  * Print informations on a single window to log. There should be
@@ -158,11 +167,13 @@ static void print_windows(void)
  */
 void nanoglk_window_init(int width, int height, int depth)
 {
+   nanoglk_mainwindow = new_sdl_window_holder();
+
    /* set the title bar */
    //  ToDo: set to name of story or interpreter?
-   nanoglk_output_window = SDL_CreateWindow("NanoGlk main window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
+   nanoglk_mainwindow->nanoglk_output_window = SDL_CreateWindow("NanoGlk main window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
    printf("window.c SDL_SetVideoMode SDL_CreateWindow after\n");
-   if(nanoglk_output_window == NULL) {
+   if(nanoglk_mainwindow->nanoglk_output_window == NULL) {
       /* Handle problem */
       fprintf(stderr, "%s\n", SDL_GetError());
       SDL_Quit();
@@ -170,26 +181,28 @@ void nanoglk_window_init(int width, int height, int depth)
 
    // Blunt SDL1.2 to SDL2 conversion choice
    if (1==2) {
-   nanoglk_output_renderer = SDL_CreateRenderer(nanoglk_output_window, -1, 0);
-   if(nanoglk_output_renderer == NULL) {
+   nanoglk_mainwindow->windowtype=1;
+   nanoglk_mainwindow->nanoglk_output_renderer = SDL_CreateRenderer(nanoglk_mainwindow->nanoglk_output_window, -1, 0);
+   if(nanoglk_mainwindow->nanoglk_output_renderer == NULL) {
       /* Handle problem */
       fprintf(stderr, "RENDERER %s\n", SDL_GetError());
-      SDL_ShowSimpleMessageBox(0, "Renderer init error", SDL_GetError(), nanoglk_output_window);
+      SDL_ShowSimpleMessageBox(0, "Renderer init error", SDL_GetError(), nanoglk_mainwindow->nanoglk_output_window);
       SDL_Quit();
    }
-   nanoglk_output_texture = SDL_CreateTexture(nanoglk_output_renderer,
+   nanoglk_mainwindow->nanoglk_output_texture = SDL_CreateTexture(nanoglk_mainwindow->nanoglk_output_renderer,
       SDL_PIXELFORMAT_ARGB8888,
       SDL_TEXTUREACCESS_STREAMING,
       width, height);
-   if(nanoglk_output_texture == NULL) {
+   if(nanoglk_mainwindow->nanoglk_output_texture == NULL) {
       /* Handle problem */
       fprintf(stderr, "TEXTURE %s\n", SDL_GetError());
-      SDL_ShowSimpleMessageBox(0, "Texture init error", SDL_GetError(), nanoglk_output_window);
+      SDL_ShowSimpleMessageBox(0, "Texture init error", SDL_GetError(), nanoglk_mainwindow->nanoglk_output_window);
       SDL_Quit();
    }
    } else {
+      nanoglk_mainwindow->windowtype=2;
       // but instead of creating a renderer, we can draw directly to the screen
-      nanoglk_surface = SDL_GetWindowSurface(nanoglk_output_window);
+      nanoglk_mainwindow->nanoglk_surface = SDL_GetWindowSurface(nanoglk_mainwindow->nanoglk_output_window);
    }
 
    printf("window.c SDL_CreateWindow after CHECKPOINT_A\n");
@@ -258,8 +271,8 @@ winid_t glk_window_open(winid_t split, glui32 method, glui32 size,
 
       win->parent = NULL;
       win->area.x = win->area.y = 0;
-      win->area.w = nanoglk_surface->w;
-      win->area.h = nanoglk_surface->h;
+      win->area.w = nanoglk_mainwindow->nanoglk_surface->w;
+      win->area.h = nanoglk_mainwindow->nanoglk_surface->h;
 
       root = win;
 
@@ -661,25 +674,25 @@ void window_draw_border(winid_t pair)
       SDL_Color c = nanoglk_buffer_font[style_Normal]->fg;
       switch(win->method & winmethod_DirMask) {
       case winmethod_Above:
-         nano_fill_rect(nanoglk_surface, c,
+         nano_fill_rect(nanoglk_mainwindow->nanoglk_surface, c,
                         win->area.x, win->area.y + win->area.h,
                         win->area.w, BORDER_WIDTH);
          break;
                         
       case winmethod_Below:
-         nano_fill_rect(nanoglk_surface, c,
+         nano_fill_rect(nanoglk_mainwindow->nanoglk_surface, c,
                         win->area.x, win->area.y - BORDER_WIDTH,
                         win->area.w, BORDER_WIDTH);
          break;
 
       case winmethod_Left:
-         nano_fill_rect(nanoglk_surface, c,
+         nano_fill_rect(nanoglk_mainwindow->nanoglk_surface, c,
                         win->area.x + win->area.w, win->area.y,
                         BORDER_WIDTH, win->area.h);
          break;
 
       case winmethod_Right:
-         nano_fill_rect(nanoglk_surface, c,
+         nano_fill_rect(nanoglk_mainwindow->nanoglk_surface, c,
                         win->area.x - BORDER_WIDTH, win->area.y,
                         BORDER_WIDTH, win->area.h);
          break;
@@ -890,7 +903,7 @@ void nanoglk_window_flush_all(void)
 
    if(root)
       flush(root);
-   SDL_UpdateWindowSurface(nanoglk_output_window);
+   SDL_UpdateWindowSurface(nanoglk_mainwindow->nanoglk_output_window);
 }
 
 /*

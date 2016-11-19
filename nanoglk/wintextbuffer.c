@@ -105,8 +105,8 @@ void nanoglk_wintextbuffer_clear(winid_t win)
       = tb->curword_len = tb->read_until = 0;
    tb->space_styl = -1;
    nano_trace("win %p (clear): space_styl = %d", win, tb->space_styl);
-   SDL_FillRect(nanoglk_surface, &win->area,
-                SDL_MapRGB(nanoglk_surface->format,
+   SDL_FillRect(nanoglk_mainwindow->nanoglk_surface, &win->area,
+                SDL_MapRGB(nanoglk_mainwindow->nanoglk_surface->format,
                            win->bg[win->cur_styl].r, win->bg[win->cur_styl].g,
                            win->bg[win->cur_styl].b));
 }
@@ -140,18 +140,18 @@ void nanoglk_wintextbuffer_resize(winid_t win, SDL_Rect *area)
       if(area->h == win->area.h) {
          // Window size has not changed at all. Simply copy.
          nano_trace("      same height");
-         SDL_BlitSurface(nanoglk_surface, &win->area, nanoglk_surface, area);
+         SDL_BlitSurface(nanoglk_mainwindow->nanoglk_surface, &win->area, nanoglk_mainwindow->nanoglk_surface, area);
       } else if(area->h > win->area.h) {
          nano_trace("      height larger");
          // Window has become taller.
          // First, copy the old area ...
          SDL_Rect r1 = { area->x, area->y, win->area.w, win->area.h };
          // ... then clear the difference.
-         SDL_BlitSurface(nanoglk_surface, &win->area, nanoglk_surface, &r1);
+         SDL_BlitSurface(nanoglk_mainwindow->nanoglk_surface, &win->area, nanoglk_mainwindow->nanoglk_surface, &r1);
          SDL_Rect r2 = { area->x + win->area.h, area->y,
                          win->area.w, area->h - win->area.h };
-         SDL_FillRect(nanoglk_surface, &r2,
-                      SDL_MapRGB(nanoglk_surface->format,
+         SDL_FillRect(nanoglk_mainwindow->nanoglk_surface, &r2,
+                      SDL_MapRGB(nanoglk_mainwindow->nanoglk_surface->format,
                                  win->bg[win->cur_styl].r,
                                  win->bg[win->cur_styl].g,
                                  win->bg[win->cur_styl].b));
@@ -163,14 +163,14 @@ void nanoglk_wintextbuffer_resize(winid_t win, SDL_Rect *area)
             nano_trace("          content fits");
             // Content still fits in new space.
             SDL_Rect r = { win->area.x, win->area.y, area->w, area->h };
-            SDL_BlitSurface(nanoglk_surface, &r, nanoglk_surface, area);
+            SDL_BlitSurface(nanoglk_mainwindow->nanoglk_surface, &r, nanoglk_mainwindow->nanoglk_surface, area);
          } else {
             // Part of content gets lost. Again, this hopefully does not happen
             // too often.
             nano_trace("          content lost");
             int d = tb->cur_y + tb->line_height - area->h;
             SDL_Rect r = { win->area.x, win->area.y + d, area->w, area->h };
-            SDL_BlitSurface(nanoglk_surface, &r, nanoglk_surface, area);
+            SDL_BlitSurface(nanoglk_mainwindow->nanoglk_surface, &r, nanoglk_mainwindow->nanoglk_surface, area);
             tb->cur_y = MAX(tb->cur_y - d, 0);
             tb->read_until = MAX(tb->read_until - d, 0);
          }
@@ -232,7 +232,7 @@ void add_word(winid_t win, SDL_Surface **word)
       SDL_Rect rt = { 0,  0, word[i]->w, word[i]->h };
       SDL_Rect rs = { win->area.x + tb->cur_x, win->area.y + tb->cur_y,
                       word[i]->w, word[i]->h };
-      SDL_BlitSurface(word[i], &rt, nanoglk_surface, &rs);
+      SDL_BlitSurface(word[i], &rt, nanoglk_mainwindow->nanoglk_surface, &rs);
       tb->cur_x += word[i]->w;
       tb->line_height = MAX(tb->line_height, word[i]->h);
    }
@@ -392,7 +392,7 @@ glui32 nanoglk_wintextbuffer_get_line16(winid_t win, Uint16 *text,
 
    while(1) {
       SDL_Event event;
-      nano_input_text16(nanoglk_surface, &event, text, max_len, max_char,
+      nano_input_text16(nanoglk_mainwindow->nanoglk_surface, &event, text, max_len, max_char,
                         win->area.x + tb->cur_x, win->area.y + tb->cur_y,
                         win->area.w - tb->cur_x,
                         nanoglk_buffer_font[style_Input]->text_height,
@@ -593,41 +593,41 @@ void ensure_space(winid_t win, int space)
                                      more, win->fg[style_Input],
                                      win->bg[style_Input]);
 
-         nano_save_window(nanoglk_surface,
+         nano_save_window(nanoglk_mainwindow->nanoglk_surface,
                           win->area.x, win->area.y + win->area.h - t->h,
                           win->area.w, t->h);
-         nano_fill_rect(nanoglk_surface, win->bg[win->cur_styl],
+         nano_fill_rect(nanoglk_mainwindow->nanoglk_surface, win->bg[win->cur_styl],
                         win->area.x, win->area.y + win->area.h - t->h,
                         win->area.w, t->h);
          
          SDL_Rect r1 = { 0, 0, t->w, t->h };
          SDL_Rect r2 = { win->area.x, win->area.y + win->area.h - t->h,
                          t->w, t->h };
-         SDL_BlitSurface(t, &r1, nanoglk_surface, &r2);
+         SDL_BlitSurface(t, &r1, nanoglk_mainwindow->nanoglk_surface, &r2);
          SDL_FreeSurface(t);
 
          // SDL1.2: SDL_Flip(nanoglk_surface);
-         SDL_UpdateWindowSurface(nanoglk_output_window);
+         SDL_UpdateWindowSurface(nanoglk_mainwindow->nanoglk_output_window);
 
          wait_for_key();
 
          // TODO Clarify why a simple "user_has_read(win)" does not work here.
          tb->read_until = tb->cur_y - tb->last_line_height;
 
-         nano_restore_window(nanoglk_surface);
+         nano_restore_window(nanoglk_mainwindow->nanoglk_surface);
       }
       
       // Copy (scroll down).
       SDL_Rect r1 = { win->area.x, win->area.y + d,
                       win->area.w, win->area.h - d };
       SDL_Rect r2 = { win->area.x, win->area.y, win->area.w, win->area.h - d };
-      SDL_BlitSurface(nanoglk_surface, &r1, nanoglk_surface, &r2);
+      SDL_BlitSurface(nanoglk_mainwindow->nanoglk_surface, &r1, nanoglk_mainwindow->nanoglk_surface, &r2);
 
       // Clear new, free area.
       SDL_Rect r = { win->area.x, win->area.y + win->area.h - d,
                      win->area.w, d };
-      SDL_FillRect(nanoglk_surface, &r,
-                   SDL_MapRGB(nanoglk_surface->format,
+      SDL_FillRect(nanoglk_mainwindow->nanoglk_surface, &r,
+                   SDL_MapRGB(nanoglk_mainwindow->nanoglk_surface->format,
                               win->bg[win->cur_styl].r,
                               win->bg[win->cur_styl].g,
                               win->bg[win->cur_styl].b));

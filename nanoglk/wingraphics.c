@@ -57,8 +57,8 @@ void nanoglk_wingraphics_free(winid_t win)
 void nanoglk_wingraphics_clear(winid_t win)
 {
    struct graphics *g = (struct graphics*)win->data;
-   SDL_FillRect(nanoglk_surface, &win->area,
-                SDL_MapRGB(nanoglk_surface->format, g->bg.r, g->bg.g, g->bg.b));
+   SDL_FillRect(nanoglk_mainwindow->nanoglk_surface, &win->area,
+                SDL_MapRGB(nanoglk_mainwindow->nanoglk_surface->format, g->bg.r, g->bg.g, g->bg.b));
 }
 
 /*
@@ -86,7 +86,7 @@ void nanoglk_wingraphics_erase_rect(winid_t win,
                                     glui32 width, glui32 height)
 {
    struct graphics *g = (struct graphics*)win->data;
-   nano_fill_rect(nanoglk_surface, g->bg,
+   nano_fill_rect(nanoglk_mainwindow->nanoglk_surface, g->bg,
                   win->area.x + left, win->area.y + top, width, height);
 }
 
@@ -98,7 +98,7 @@ void nanoglk_wingraphics_fill_rect(winid_t win, glui32 color,
                                    glui32 width, glui32 height)
 {
    SDL_Color c = { (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff };
-   nano_fill_rect(nanoglk_surface, c,
+   nano_fill_rect(nanoglk_mainwindow->nanoglk_surface, c,
                   win->area.x + left, win->area.y + top, width, height);
 }
 
@@ -124,5 +124,5 @@ void nanoglk_wingraphics_put_image(winid_t win, SDL_Surface *image,
                    MIN(image->w, win->area.w - val1),
                    MIN(image->h, win->area.h - val2) };
    SDL_Rect r2 = { win->area.x + val1, win->area.y + val2, r1.w, r1.h };
-   SDL_BlitSurface(image, &r1, nanoglk_surface, &r2);
+   SDL_BlitSurface(image, &r1, nanoglk_mainwindow->nanoglk_surface, &r2);
 }
