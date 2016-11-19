@@ -596,7 +596,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
 
 // ToDo: this logic assumes Uint16, really UTF-8 can have 3 or more bytes. But Inform7 is 16-bit currently.
             if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
-               printf("ui.c SDL_TEXTINPUT branch0\n");
+               printf("ui.c SDL_TEXTINPUT branch0 '%s'\n", inputtext);
                if(len < max_len) {
                   memmove(text + pos + 1, text + pos,
                           sizeof(Uint16) * (len - pos + 1));

@@ -160,7 +160,7 @@ void nanoglk_window_init(int width, int height, int depth)
 {
    /* set the title bar */
    //  ToDo: set to name of story or interpreter?
-   nanoglk_output_window = SDL_CreateWindow("Window caption", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
+   nanoglk_output_window = SDL_CreateWindow("NanoGlk main window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
    printf("window.c SDL_SetVideoMode SDL_CreateWindow after\n");
    if(nanoglk_output_window == NULL) {
       /* Handle problem */
