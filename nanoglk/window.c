@@ -206,8 +206,7 @@ void nanoglk_window_init(int width, int height, int depth)
    }
 
    printf("window.c SDL_CreateWindow after CHECKPOINT_A\n");
-   // ToDo: equal to nano_reg_surface for saving window content
-   // nano_reg_surface(&nanoglk_surface);
+   nano_reg_surface(&nanoglk_mainwindow->nanoglk_surface);
 
    int i;
    for(i = 0; i < style_NUMSTYLES; i++) {
@@ -231,6 +230,9 @@ winid_t glk_window_get_root(void)
 winid_t glk_window_open(winid_t split, glui32 method, glui32 size,
                         glui32 wintype, glui32 rock)
 {
+printf("window.c glk_window_open\n");
+SDL_Delay(2000);
+
    winid_t win = (winid_t)nano_malloc(sizeof(struct glk_window_struct));
    nanoglk_log("glk_window_open(%p, %d, %d, %d, %d) => %p",
               split, method, size, wintype, rock, win);
@@ -667,6 +669,8 @@ void window_rearrange(winid_t pair)
  */
 void window_draw_border(winid_t pair)
 {
+printf("window.c window_draw_border\n");
+SDL_Delay(500);
    winid_t win = pair->right;
    if(win && (win->method & winmethod_BorderMask) == winmethod_Border) {
       // TODO: Which color? Should always be the same. Or, at least, it
@@ -891,6 +895,11 @@ void nanoglk_window_put_char(winid_t win, glui32 c)
       nanoglk_wintextgrid_put_char(win, c);
       break;
    }
+   
+   // putting this here slows things down enough to see that the text is drawn and then cleared on Anchorhead.
+   SDL_UpdateWindowSurface(nanoglk_mainwindow->nanoglk_output_window);
+   SDL_Delay(5);
+   // ToDo: introuduce a sleep delay option to make text seem ike terminal-entry.
 }
 
 /*

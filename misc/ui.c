@@ -428,6 +428,7 @@ static void message(SDL_Surface *surface, Uint16 **msg, Uint16 **btn,
    free(t);
    // SDL1.2: SDL_Flip(surface);
    // SDL_UpdateWindowSurface(surface);
+   printf("ui.c message WARNING - won't render.\n");
 }
 
 /*
@@ -533,6 +534,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
                        int x, int y, int w, int h, TTF_Font *font,
                        SDL_Color fg, SDL_Color bg, int *state)
 {
+   printf("ui.c WARNING, using old nano_input_text16\n");
    nano_trace("input_text16(..., %p, %d, %d, %d, %d, %d, %d, ...)",
               text, max_len, max_char, x, y, w, h);
 
@@ -755,7 +757,7 @@ void nano_input_text16_sdlwindow(struct sdl_window_holder *sdl_window_out, SDL_E
                        int x, int y, int w, int h, TTF_Font *font,
                        SDL_Color fg, SDL_Color bg, int *state)
 {
-   nano_trace("input_text16(..., %p, %d, %d, %d, %d, %d, %d, ...)",
+   nano_trace("input_text16_sdlwindow(..., %p, %d, %d, %d, %d, %d, %d, ...)",
               text, max_len, max_char, x, y, w, h);
 
    int pos = strlen16(text);

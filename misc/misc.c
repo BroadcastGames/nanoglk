@@ -22,6 +22,7 @@
  * Miscellaneous, which does not fit anywhere else.
  */
 
+#include "../nanoglk/nanoglk.h"
 #include "misc.h"
 #include <sys/types.h>
 #include <unistd.h>
@@ -315,6 +316,20 @@ void nano_unreg_surface(SDL_Surface **surface)
    nano_fail("surface pointer %p not registered", surface);
 }
 
+
+/*
+ * Create a new SDL_Window wrapper
+ * ToDo: right now this is duplicate function fro window.c, can we use that?
+ */
+static struct sdl_window_holder *new_sdl_window_holder()
+{
+   struct sdl_window_holder *holder =
+      (struct sdl_window_holder*)nano_malloc(sizeof(struct sdl_window_holder));
+
+   return holder;
+}
+
+
 // Called, when the suspended process is woken up again (e. g. by "fg" in
 // a shell).
 static void handle_cont()
@@ -334,19 +349,61 @@ static void handle_cont()
    SDL_ShowCursor(SDL_DISABLE);
 #endif
 
-   //for(struct saved_buffer *saved = first_saved; saved; saved = saved->next) {
+   for(struct saved_buffer *saved = first_saved; saved; saved = saved->next) {
       // TODO (cf. nanoglk_window_init())
-   //   *saved->surface = SDL_SetVideoMode(saved->w, saved->h, 8 * saved->bpp, 0);
+      // SDL1.2 way: *saved->surface = SDL_SetVideoMode(saved->w, saved->h, 8 * saved->bpp, 0);
+
+// ToDo: keep this structure instead of just the surface?
+      struct sdl_window_holder *saved_window_holder = new_sdl_window_holder();
+
+   /* set the title bar */
+   //  ToDo: set to name of story or interpreter?
+   saved_window_holder->nanoglk_output_window = SDL_CreateWindow("NanoGlk saved window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, saved->w, saved->h, 0);
+   printf("misc.c SDL_SetVideoMode SDL_CreateWindow after\n");
+   if(saved_window_holder->nanoglk_output_window == NULL) {
+      /* Handle problem */
+      fprintf(stderr, "%s\n", SDL_GetError());
+      SDL_Quit();
+   }
+
+   // Blunt SDL1.2 to SDL2 conversion choice
+   if (1==2) {
+      saved_window_holder->windowtype=1;
+      saved_window_holder->nanoglk_output_renderer = SDL_CreateRenderer(saved_window_holder->nanoglk_output_window, -1, 0);
+      if(saved_window_holder->nanoglk_output_renderer == NULL) {
+         /* Handle problem */
+         fprintf(stderr, "RENDERER %s\n", SDL_GetError());
+         SDL_ShowSimpleMessageBox(0, "Renderer init error", SDL_GetError(), nanoglk_mainwindow->nanoglk_output_window);
+         SDL_Quit();
+      }
+      saved_window_holder->nanoglk_output_texture = SDL_CreateTexture(saved_window_holder->nanoglk_output_renderer,
+         SDL_PIXELFORMAT_ARGB8888,
+         SDL_TEXTUREACCESS_STREAMING,
+         saved->w, saved->h);
+      if(saved_window_holder->nanoglk_output_texture == NULL) {
+         /* Handle problem */
+         fprintf(stderr, "TEXTURE %s\n", SDL_GetError());
+         SDL_ShowSimpleMessageBox(0, "Texture init error", SDL_GetError(), nanoglk_mainwindow->nanoglk_output_window);
+         SDL_Quit();
+      }
+   } else {
+      saved_window_holder->windowtype=2;
+      // but instead of creating a renderer, we can draw directly to the screen
+      saved_window_holder->nanoglk_surface = SDL_GetWindowSurface(saved_window_holder->nanoglk_output_window);
+   }
+
+      *saved->surface = saved_window_holder->nanoglk_surface;
+
       
-   //   SDL_LockSurface(*saved->surface);
-   //   memcpy((*saved->surface)->pixels,
-   //          saved->buf, saved->w * saved->h * saved->bpp);
-   //   SDL_UnlockSurface(*saved->surface);
-   //   free(saved->buf);
+      SDL_LockSurface(*saved->surface);
+      memcpy((*saved->surface)->pixels,
+             saved->buf, saved->w * saved->h * saved->bpp);
+      SDL_UnlockSurface(*saved->surface);
+      free(saved->buf);
       // ToDo: can we just copy saved->surface into our main var?
       // old SDL1.2: SDL_Flip(*saved->surface);
-      // SDL_UpdateWindowSurface(nanoglk_output_window);
-   //}
+      SDL_UpdateWindowSurface(saved_window_holder->nanoglk_output_window);
+   }
 }
 
 // Suspend the process, by sending SIGSTOP to oneself.
