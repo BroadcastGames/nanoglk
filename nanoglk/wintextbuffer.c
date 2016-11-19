@@ -309,6 +309,7 @@ glui32 nanoglk_wintextbuffer_get_char_uni(winid_t win)
       switch(event.type) {
       case SDL_KEYDOWN:
          user_has_read(win);
+         printf("ToDo SDL2 SDL_KEYDOWN wintextbuffer.c nanoglk_wintextbuffer_get_char_uni\n");
          return nanoglk_window_char_sdl_to_glk(&event.key.keysym);
       }
    }

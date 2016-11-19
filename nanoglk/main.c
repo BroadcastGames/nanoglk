@@ -139,6 +139,8 @@ static const char *std_conf[] = {
 
 int main(int argc, char *argv[])
 {
+   printf("printf test #1\n");
+   printf("printf test #2 %d\n", 123);
    nanoglk_log("main: ctrl-alt-q will quit the app");
 
    nano_init(argc, argv, TRUE);

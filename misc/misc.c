@@ -52,9 +52,13 @@ static void quit(void);
 
 /*
  * Some initialization. The arguments of main() should be passed.
+ * logging somehow suffered from a problem similar to this where printf
+ *   was being interfered with:
+ *   http://stackoverflow.com/questions/9309246/repeated-use-of-a-variadic-function-argument-doesnt-work
  */
 void nano_init(int argc, char *argv[], int allow_suspend)
 {
+// ToDo: replace all LOG_FILE logic with SDL_LogSetOutputFunction
 #ifdef LOG_FILE
    printf("LOG_FILE processing...\n");
    char buf[1024];

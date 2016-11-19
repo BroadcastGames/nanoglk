@@ -34,7 +34,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-// compatibly with other compilers than GCC
+// compatibility with other compilers than GCC
 #ifndef __GNUC__
 #  define  __attribute__(x)  /* nothing */
 #endif

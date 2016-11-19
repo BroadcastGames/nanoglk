@@ -586,13 +586,17 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
 // SDL1.2 --> SDL2 "The new event is SDL_TEXTINPUT."
 
       switch(event->type) {
-      case SDL_TEXTINPUT:
-         printf("ui.c SDL_TEXTINPUT '%s'\n", event->text.text);
+      case SDL_TEXTEDITING:
+         printf("ui.c SDL_TEXTEDITING SPOT_AA0\n");
+         break;
+      case SDL_TEXTINPUT: {
+         const char *inputtext = event->text.text;
+         c = inputtext[0];
+         printf("ui.c SDL_TEXTINPUT SPOT_AA0 '%s' %d\n", inputtext, c);
 
-         c = event->text.text;
 // ToDo: this logic assumes Uint16, really UTF-8 can have 3 or more bytes. But Inform7 is 16-bit currently.
             if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
-               printf("ui.c SDL_TEXTINPUT brach0");
+               printf("ui.c SDL_TEXTINPUT branch0\n");
                if(len < max_len) {
                   memmove(text + pos + 1, text + pos,
                           sizeof(Uint16) * (len - pos + 1));
@@ -601,7 +605,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
                }
             }
             else {
-               printf("ui.c SDL_TEXTINPUT brach1");
+               printf("ui.c SDL_TEXTINPUT branch1\n");
                if(state)
                   *state = pos | (ox << 15);
 
@@ -618,7 +622,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
 //               SDL_UpdateWindowSurface(nanoglk_output_window);
                return;
         }
-        break;
+        break; }
       case SDL_KEYDOWN:
 printf("ui.c SDL_KEYDOWN %d\n", event->key.keysym.sym);
          switch(event->key.keysym.sym) {
