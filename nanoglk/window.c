@@ -974,6 +974,7 @@ glui32 nanoglk_window_get_char_uni(winid_t win)
  */
 glui32 nanoglk_window_char_sdl_to_glk(SDL_Keysym *keysym)
 {
+   printf("window.c nanoglk_window_char_sdl_to_glk %d '%c'\n", keysym->sym, keysym->sym);
    switch(keysym->sym) {
    case SDLK_LEFT: return keycode_Left;
    case SDLK_RIGHT: return keycode_Right;
@@ -1000,7 +1001,8 @@ glui32 nanoglk_window_char_sdl_to_glk(SDL_Keysym *keysym)
    case SDLK_F11: return keycode_Func11;
    case SDLK_F12: return keycode_Func12;
    default:
-      return keysym->scancode;
+      printf("keysym->scancode %d\n", keysym->scancode);
+      return keysym->sym;
    }
 }
 
