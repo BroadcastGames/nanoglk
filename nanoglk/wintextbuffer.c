@@ -342,7 +342,7 @@ glui32 nanoglk_wintextbuffer_get_char_uni(winid_t win)
       switch(event.type) {
       case SDL_KEYDOWN:
          user_has_read(win);
-         printf("ToDo SDL2 SDL_KEYDOWN wintextbuffer.c");
+         printf("ToDo SDL2 SDL_KEYDOWN wintextbuffer.c nanoglk_wintextbuffer_get_char_uni\n");
          // return nanoglk_window_char_sdl_to_glk(&event.key.keysym);
          return &event.key.keysym;
       }
@@ -440,7 +440,7 @@ printf("nanoglk_wintextbuffer_get_line16 SPOT3\n");
       history_repl[i] = NULL;
 
 if (devLog_winTextBuf_getLin16)
-printf("nanoglk_wintextbuffer_get_line16 SPOT4\n");
+printf("wintextbuffer.c nanoglk_wintextbuffer_get_line16 SPOT4\n");
 
    while(1) {
       // printf("wintextbuffer.c nanoglk_wintextbuffer_get_line16 while-loop SPOT0\n");
@@ -720,7 +720,7 @@ printf("wintextbuffer.c ensure_space CHECKPOINT_K\n");
       // SDL_Texture *src_texture = SDL_CreateTextureFromSurface(nanoglk_output_renderer, r1);
       SDL_Surface* currentScreenSurface = SDL_GetWindowSurface(nanoglk_output_window);
 // unsolved problem here.
-      SDL_RenderCopy(nanoglk_output_renderer, src_texture, &r1, &r2);
+//      SDL_RenderCopy(nanoglk_output_renderer, src_texture, &r1, &r2);
       SDL_RenderPresent(nanoglk_output_renderer);
 
       // Clear new, free area.

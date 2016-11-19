@@ -597,7 +597,7 @@ printf("ui.c nano_input_text16 starting while-loop\n");
          c = event->text.text;
 // ToDo: this logic assumes Uint16, really UTF-8 can have 3 or more bytes. But Inform7 is 16-bit currently.
             if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
-               printf("ui.c SDL_TEXTINPUT brach0");
+               printf("ui.c SDL_TEXTINPUT branch0\n");
                if(len < max_len) {
                   memmove(text + pos + 1, text + pos,
                           sizeof(Uint16) * (len - pos + 1));
@@ -606,7 +606,7 @@ printf("ui.c nano_input_text16 starting while-loop\n");
                }
             }
             else {
-               printf("ui.c SDL_TEXTINPUT brach1");
+               printf("ui.c SDL_TEXTINPUT branch1\n");
                if(state)
                   *state = pos | (ox << 15);
 
