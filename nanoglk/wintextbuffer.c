@@ -716,16 +716,20 @@ printf("wintextbuffer.c ensure_space CHECKPOINT_K\n");
       SDL_BlitSurface(nanoglk_surface, &r1, nanoglk_surface, &r2);
 #endif
 
-      SDL_RenderCopy(nanoglk_output_renderer, &r1, nanoglk_output_texture, &r2);
+      // SDL_RenderCopy(nanoglk_output_renderer, &r1, nanoglk_output_texture, &r2);
+      // SDL_Texture *src_texture = SDL_CreateTextureFromSurface(nanoglk_output_renderer, r1);
+      SDL_Surface* currentScreenSurface = SDL_GetWindowSurface(nanoglk_output_window);
+// unsolved problem here.
+      SDL_RenderCopy(nanoglk_output_renderer, src_texture, &r1, &r2);
       SDL_RenderPresent(nanoglk_output_renderer);
 
       // Clear new, free area.
-      SDL_Rect r = { win->area.x, win->area.y + win->area.h - d,
+      SDL_Rect clearRect = { win->area.x, win->area.y + win->area.h - d,
                      win->area.w, d };
 
 // skip clearing
 #ifdef SDL12R
-      SDL_FillRect(nanoglk_surface, &r,
+      SDL_FillRect(nanoglk_surface, &clearRect,
                    SDL_MapRGB(nanoglk_surface->format,
                               win->bg[win->cur_styl].r,
                               win->bg[win->cur_styl].g,
