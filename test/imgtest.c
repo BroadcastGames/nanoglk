@@ -39,6 +39,7 @@ int main(int argc, char **argv)
    i1[3] = nano_scale_surface(i0, 160, 5 * i0->h);
    SDL_FreeSurface(i0);
 
+/*
    SDL_Surface *s = SDL_SetVideoMode( 320, 240, 24, SDL_DOUBLEBUF);
    
    for(int i = 0; i < 4; i++) {
@@ -49,6 +50,7 @@ int main(int argc, char **argv)
    }
 
    SDL_Flip(s);
+*/
 
    SDL_Event e;
    do

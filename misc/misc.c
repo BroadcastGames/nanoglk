@@ -28,7 +28,7 @@
 #include <signal.h>
 
 #ifdef LOG_FILE
-static FILE *log;
+static FILE *logfile;
 #define LOG_ENABLED
 #endif
 
@@ -61,7 +61,7 @@ void nano_init(int argc, char *argv[], int allow_suspend)
    sprintf(buf, "%s-%d.log", argv[0], getpid());
    printf("LOG_FILE %s\n", buf);
    // ToDo: On Unbutu 16.10 this seems to never reach the printf following the fopen
-   log = fopen(buf, "w");
+   logfile = fopen(buf, "w");
    // printf("LOG_FILE %s\n", buf);
 #endif
 
@@ -76,7 +76,7 @@ void nano_init(int argc, char *argv[], int allow_suspend)
 void quit(void)
 {
 #ifdef LOG_FILE
-   fclose(log);
+   fclose(logfile);
 #endif
    exit(0);
 }
@@ -112,7 +112,7 @@ void quit(void)
 FILE *nano_logfile(void)
 {
 #ifdef LOG_ENABLED
-   return log;
+   return logfile;
 #else
    return NULL;
 #endif
@@ -121,60 +121,60 @@ FILE *nano_logfile(void)
 void nano_trace(const char *fmt, ...)
 {
 #if defined(LOG_ENABLED) && defined(LOG_TRACE)
-   fprintf(log, "TRACE: ");
+   fprintf(logfile, "TRACE: ");
 
    va_list argp;
    va_start(argp, fmt);
-   vfprintf(log, fmt, argp);
+   vfprintf(logfile, fmt, argp);
    va_end(argp);
    
-   fprintf(log, "\n");
-   fflush(log);
+   fprintf(logfile, "\n");
+   fflush(logfile);
 #endif
 }
 
 void nano_info(const char *fmt, ...)
 {
 #ifdef LOG_ENABLED
-   fprintf(log, "INFO: ");
+   fprintf(logfile, "INFO: ");
 
    va_list argp;
    va_start(argp, fmt);
-   vfprintf(log, fmt, argp);
+   vfprintf(logfile, fmt, argp);
    va_end(argp);
    
-   fprintf(log, "\n");
-   fflush(log);
+   fprintf(logfile, "\n");
+   fflush(logfile);
 #endif
 }
 
 void nano_warn(const char *fmt, ...)
 {
 #ifdef LOG_ENABLED
-   fprintf(log, "WARN: ");
+   fprintf(logfile, "WARN: ");
 
    va_list argp;
    va_start(argp, fmt);
-   vfprintf(log, fmt, argp);
+   vfprintf(logfile, fmt, argp);
    va_end(argp);
    
-   fprintf(log, "\n");
-   fflush(log);
+   fprintf(logfile, "\n");
+   fflush(logfile);
 #endif
 }
 
 void nano_fail(const char *fmt, ...)
 {
 #ifdef LOG_FILE
-   fprintf(log, "ERROR: ");
+   fprintf(logfile, "ERROR: ");
 
    va_list argp;
    va_start(argp, fmt);
-   vfprintf(log, fmt, argp);
+   vfprintf(logfile, fmt, argp);
    va_end (argp);
    
-   fprintf(log, "\n");
-   fflush(log);
+   fprintf(logfile, "\n");
+   fflush(logfile);
 #endif
 
    fprintf(stderr, "ERROR: ");
@@ -192,15 +192,15 @@ void nano_warnunless(int b, const char *fmt, ...)
 {
 #ifdef LOG_ENABLED
    if(!b) {
-      fprintf(log, "WARN: ");
+      fprintf(logfile, "WARN: ");
 
       va_list argp;
       va_start(argp, fmt);
-      vfprintf(log, fmt, argp);
+      vfprintf(logfile, fmt, argp);
       va_end(argp);
       
-      fprintf(log, "\n");
-      fflush(log);
+      fprintf(logfile, "\n");
+      fflush(logfile);
    }
 #endif
 }
@@ -209,15 +209,15 @@ void nano_failunless (int b, const char *fmt, ...)
 {
    if(!b) {
 #ifdef LOG_FILE
-      fprintf(log, "ERROR: ");
+      fprintf(logfile, "ERROR: ");
 
       va_list argp;
       va_start(argp, fmt);
-      vfprintf(log, fmt, argp);
+      vfprintf(logfile, fmt, argp);
       va_end (argp);
    
-      fprintf(log, "\n");
-      fflush(log);
+      fprintf(logfile, "\n");
+      fflush(logfile);
 #endif
 
       fprintf(stderr, "ERROR: ");
@@ -330,20 +330,19 @@ static void handle_cont()
    SDL_ShowCursor(SDL_DISABLE);
 #endif
 
-   SDL_EnableUNICODE(1);
-   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-
-   for(struct saved_buffer *saved = first_saved; saved; saved = saved->next) {
+   //for(struct saved_buffer *saved = first_saved; saved; saved = saved->next) {
       // TODO (cf. nanoglk_window_init())
-      *saved->surface = SDL_SetVideoMode(saved->w, saved->h, 8 * saved->bpp, 0);
+   //   *saved->surface = SDL_SetVideoMode(saved->w, saved->h, 8 * saved->bpp, 0);
       
-      SDL_LockSurface(*saved->surface);
-      memcpy((*saved->surface)->pixels,
-             saved->buf, saved->w * saved->h * saved->bpp);
-      SDL_UnlockSurface(*saved->surface);
-      free(saved->buf);
-      SDL_Flip(*saved->surface);
-   }
+   //   SDL_LockSurface(*saved->surface);
+   //   memcpy((*saved->surface)->pixels,
+   //          saved->buf, saved->w * saved->h * saved->bpp);
+   //   SDL_UnlockSurface(*saved->surface);
+   //   free(saved->buf);
+      // ToDo: can we just copy saved->surface into our main var?
+      // old SDL1.2: SDL_Flip(*saved->surface);
+      // SDL_UpdateWindowSurface(nanoglk_output_window);
+   //}
 }
 
 // Suspend the process, by sending SIGSTOP to oneself.

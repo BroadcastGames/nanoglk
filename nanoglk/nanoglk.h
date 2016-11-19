@@ -32,8 +32,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "glk.h"
 #include "gi_dispa.h"
@@ -202,6 +202,9 @@ extern SDL_Color nanoglk_ui_list_a_fg_color, nanoglk_ui_list_a_bg_color;
 extern int nanoglk_screen_width, nanoglk_screen_height, nanoglk_screen_depth;
 extern int nanoglk_filesel_width, nanoglk_filesel_height;
 extern SDL_Surface *nanoglk_surface;
+extern SDL_Window *nanoglk_output_window;
+extern SDL_Renderer *nanoglk_output_renderer;
+extern SDL_Texture *nanoglk_output_texture;
 
 extern double nanoglk_factor_horizontal_fixed, nanoglk_factor_vertical_fixed;
 extern double nanoglk_factor_horizontal_proportional;
@@ -223,7 +226,7 @@ void nanoglk_window_put_char(winid_t win, glui32 c);
 void nanoglk_window_flush_all(void);
 glui32 nanoglk_window_get_char(winid_t win);
 glui32 nanoglk_window_get_char_uni(winid_t win);
-glui32 nanoglk_window_char_sdl_to_glk(SDL_keysym *keysym);
+glui32 nanoglk_window_char_sdl_to_glk(SDL_Keysym *keysym);
 glui32 nanoglk_window_get_line(winid_t win, char *buf, glui32 maxlen,
                                glui32 initlen);
 glui32 nanoglk_window_get_line_uni(winid_t win, glui32 *buf, glui32 maxlen,

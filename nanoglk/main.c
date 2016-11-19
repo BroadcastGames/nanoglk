@@ -171,8 +171,6 @@ int main(int argc, char *argv[])
    SDL_ShowCursor(SDL_DISABLE);
 #endif
 
-   SDL_EnableUNICODE(1);
-   SDL_EnableKeyRepeat(500, 50);
    TTF_Init();
 
    init_properties();

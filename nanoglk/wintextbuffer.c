@@ -601,7 +601,8 @@ void ensure_space(winid_t win, int space)
          SDL_BlitSurface(t, &r1, nanoglk_surface, &r2);
          SDL_FreeSurface(t);
 
-         SDL_Flip(nanoglk_surface);
+         // SDL1.2: SDL_Flip(nanoglk_surface);
+         SDL_UpdateWindowSurface(nanoglk_output_window);
 
          wait_for_key();
 

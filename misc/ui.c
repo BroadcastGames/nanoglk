@@ -23,6 +23,9 @@
 
 #include "misc.h"
 
+// ToDo: how do we get access to the window global?
+//#include "nanoglk.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <limits.h>
@@ -356,6 +359,8 @@ void nano_fill_3d_outset(SDL_Surface *surface, SDL_Color bg,
  *
  * Return immediately after drawing. This function is only a helper function for
  * nano_show_message() and nano_ask_yes_no().
+ * 
+ * ToDo: SDL2 has a new function for this? SDL_ShowSimpleMessageBox
  */
 static void message(SDL_Surface *surface, Uint16 **msg, Uint16 **btn,
                     int def_btn, SDL_Color dfg, SDL_Color dbg, TTF_Font *font)
@@ -420,7 +425,8 @@ static void message(SDL_Surface *surface, Uint16 **msg, Uint16 **btn,
    }
   
    free(t);
-   SDL_Flip(surface);
+   // SDL1.2: SDL_Flip(surface);
+   // SDL_UpdateWindowSurface(surface);
 }
 
 /*
@@ -569,7 +575,9 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
       SDL_Rect rc = { x + cx - ox, y, 1, h };
       SDL_FillRect(surface, &rc, SDL_MapRGB(surface->format, fg.r, fg.g, fg.b));
 
-      SDL_Flip(surface);
+      // SDL1.2: SDL_Flip(surface);
+      // SDL_UpdateWindowSurface(surface);
+      //SDL_UpdateWindowSurface(nanoglk_output_window);
 
       nano_wait_event(event);
       int len = strlen16(text);
@@ -610,7 +618,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
             break;
             
          default:
-            c = event->key.keysym.unicode;
+            c = event->key.keysym.scancode;
             if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
                if(len < max_len) {
                   memmove(text + pos + 1, text + pos,
@@ -631,7 +639,8 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
                SDL_Rect r2 = { x, y, w, h };
                SDL_BlitSurface(ts_total, &r1, surface, &r2);
                SDL_FreeSurface(ts_total);
-               SDL_Flip(surface);
+            // SDL1.2: SDL_Flip(surface);
+            //SDL_UpdateWindowSurface(nanoglk_output_window);
 
                return;
             }
@@ -651,7 +660,8 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
             SDL_Rect r2 = { x, y, w, h };
             SDL_BlitSurface(ts_total, &r1, surface, &r2);
             SDL_FreeSurface(ts_total);
-            SDL_Flip(surface);
+            // SDL1.2: SDL_Flip(surface);
+            //SDL_UpdateWindowSurface(nanoglk_output_window);
 
             return;
       }

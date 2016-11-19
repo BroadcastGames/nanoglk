@@ -114,8 +114,8 @@ ALL_PARTS = $(NANOGLK_PARTS) $(FROTZ_PARTS) $(GLULXE_PARTS) $(GIT_PARTS)
 #   see: http://askubuntu.com/questions/68922/cant-compile-program-that-uses-sdl-after-upgrade-to-11-10-undefined-reference
 #   As a hack, NANOGLK_LIBS_ALL_END introduced
 CFLAGS_ALL = -Wall -std=c99 -DZTERP_GLK -DGLK -DOS_UNIX $(LOG)
-NANOGLK_LIBS_ALL = -lSDL -lSDL_ttf -lSDL_image
-NANOGLK_LIBS_ALL_END = -lSDL -lSDL_ttf -lSDL_image -lm
+NANOGLK_LIBS_ALL = -lSDL2 -lSDL2_ttf -lSDL2_image
+NANOGLK_LIBS_ALL_END = -lSDL2 -lSDL2_ttf -lSDL2_image -lm
 
 
 CFLAGS = $(CFLAGS_ALL) -g

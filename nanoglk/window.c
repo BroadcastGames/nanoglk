@@ -50,6 +50,10 @@
 #include "nanoglk.h"
 
 SDL_Surface *nanoglk_surface; // The SDL surface representing the screen.
+// ToDo: this should be a struct, but right now we have a single window.
+SDL_Window *nanoglk_output_window;
+SDL_Renderer *nanoglk_output_renderer;
+SDL_Texture *nanoglk_output_texture;
 static winid_t root = NULL;   // Obviously, the root window.
 
 // Thickness of borders between windows. (Simple solid borders.)
@@ -145,7 +149,7 @@ static void print_windows(void)
  * Quick and dirty control flags during development.
  * ToDo: make params in config file
  * */
-static int windowFlagSetResize = FALSE;
+// static int windowFlagSetResize = FALSE;
 
 /*
  * Initialize everything related to windows. Called in main().
@@ -154,15 +158,41 @@ void nanoglk_window_init(int width, int height, int depth)
 {
    /* set the title bar */
    //  ToDo: set to name of story or interpreter?
-   SDL_WM_SetCaption("nano Glk library", "nano Glk library Hello!");
-   
-   if (windowFlagSetResize) {
-      nanoglk_surface = SDL_SetVideoMode(width, height, depth, SDL_RESIZABLE | SDL_DOUBLEBUF);
-      // ToDo: implement resize logic to respond to user mouse events
-   } else {
-      nanoglk_surface = SDL_SetVideoMode(width, height, depth, SDL_DOUBLEBUF);
+   nanoglk_output_window = SDL_CreateWindow("Window caption", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
+   printf("window.c SDL_SetVideoMode SDL_CreateWindow after\n");
+   if(nanoglk_output_window == NULL) {
+      /* Handle problem */
+      fprintf(stderr, "%s\n", SDL_GetError());
+      SDL_Quit();
    }
-   nano_reg_surface(&nanoglk_surface);
+
+   // Blunt SDL1.2 to SDL2 conversion choice
+   if (1==2) {
+   nanoglk_output_renderer = SDL_CreateRenderer(nanoglk_output_window, -1, 0);
+   if(nanoglk_output_renderer == NULL) {
+      /* Handle problem */
+      fprintf(stderr, "RENDERER %s\n", SDL_GetError());
+      SDL_ShowSimpleMessageBox(0, "Renderer init error", SDL_GetError(), nanoglk_output_window);
+      SDL_Quit();
+   }
+   nanoglk_output_texture = SDL_CreateTexture(nanoglk_output_renderer,
+      SDL_PIXELFORMAT_ARGB8888,
+      SDL_TEXTUREACCESS_STREAMING,
+      width, height);
+   if(nanoglk_output_texture == NULL) {
+      /* Handle problem */
+      fprintf(stderr, "TEXTURE %s\n", SDL_GetError());
+      SDL_ShowSimpleMessageBox(0, "Texture init error", SDL_GetError(), nanoglk_output_window);
+      SDL_Quit();
+   }
+   } else {
+      // but instead of creating a renderer, we can draw directly to the screen
+      nanoglk_surface = SDL_GetWindowSurface(nanoglk_output_window);
+   }
+
+   printf("window.c SDL_CreateWindow after CHECKPOINT_A\n");
+   // ToDo: equal to nano_reg_surface for saving window content
+   // nano_reg_surface(&nanoglk_surface);
 
    int i;
    for(i = 0; i < style_NUMSTYLES; i++) {
@@ -858,7 +888,7 @@ void nanoglk_window_flush_all(void)
 
    if(root)
       flush(root);
-   SDL_Flip(nanoglk_surface);
+   SDL_UpdateWindowSurface(nanoglk_output_window);
 }
 
 /*
@@ -927,7 +957,7 @@ glui32 nanoglk_window_get_char_uni(winid_t win)
  * Convert SDL symbols for special keys into the respective symbols defined
  * by Glk.
  */
-glui32 nanoglk_window_char_sdl_to_glk(SDL_keysym *keysym)
+glui32 nanoglk_window_char_sdl_to_glk(SDL_Keysym *keysym)
 {
    switch(keysym->sym) {
    case SDLK_LEFT: return keycode_Left;
@@ -955,7 +985,7 @@ glui32 nanoglk_window_char_sdl_to_glk(SDL_keysym *keysym)
    case SDLK_F11: return keycode_Func11;
    case SDLK_F12: return keycode_Func12;
    default:
-      return keysym->unicode;
+      return keysym->scancode;
    }
 }
 
