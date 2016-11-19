@@ -21,6 +21,10 @@
  * Handling text buffer windows. Most functions are called from the
  * general window functions defined in "window.c".
  *
+ * ToDo SDL2: instead of passing in surface have a SDL_WindowHolder struct
+ *    and pass in SDL_Window, SDL_Renderer, Surface, etc. And an int
+ *    to indicate if running in Surface mode or Texture mode.
+ *
  * TODO (aside from several glitches): perhaps preservation of
  * text. This would make other features possible: e. g. proper
  * resizing and scrolling.

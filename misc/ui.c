@@ -582,8 +582,45 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
       nano_wait_event(event);
       int len = strlen16(text);
 
+// SDL1.2 --> SDL2 "You no longer get character input from SDL_KEYDOWN events. Use SDL_KEYDOWN to treat the keyboard like a 101-button joystick now. Text input comes from somewhere else."
+// SDL1.2 --> SDL2 "The new event is SDL_TEXTINPUT."
+
       switch(event->type) {
+      case SDL_TEXTINPUT:
+         printf("ui.c SDL_TEXTINPUT '%s'\n", event->text.text);
+
+         c = event->text.text;
+// ToDo: this logic assumes Uint16, really UTF-8 can have 3 or more bytes. But Inform7 is 16-bit currently.
+            if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
+               printf("ui.c SDL_TEXTINPUT brach0");
+               if(len < max_len) {
+                  memmove(text + pos + 1, text + pos,
+                          sizeof(Uint16) * (len - pos + 1));
+                  text[pos] = c;
+                  pos++;
+               }
+            }
+            else {
+               printf("ui.c SDL_TEXTINPUT brach1");
+               if(state)
+                  *state = pos | (ox << 15);
+
+               SDL_Rect rs = { x, y, w, h};
+               SDL_FillRect(surface, &rs, SDL_MapRGB(surface->format,
+                                                     bg.r, bg.g, bg.b));
+               ts_total = TTF_RenderUNICODE_Shaded(font, text, fg, bg);
+               SDL_Rect r1 = { ox, 0, w, h };
+               SDL_Rect r2 = { x, y, w, h };
+               SDL_BlitSurface(ts_total, &r1, surface, &r2);
+               SDL_FreeSurface(ts_total);
+               //SDL_RenderPresent(surface);
+// ToDo: how do I make this variable global?
+//               SDL_UpdateWindowSurface(nanoglk_output_window);
+               return;
+        }
+        break;
       case SDL_KEYDOWN:
+printf("ui.c SDL_KEYDOWN %d\n", event->key.keysym.sym);
          switch(event->key.keysym.sym) {
          case SDLK_LEFT:
             if(pos > 0)
@@ -618,6 +655,8 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
             break;
             
          default:
+            printf("ui.c KEY_DOWN default\n");
+#ifdef SDL12P
             c = event->key.keysym.scancode;
             if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
                if(len < max_len) {
@@ -628,6 +667,7 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
                }
             }
             else {
+#endif
                if(state)
                   *state = pos | (ox << 15);
 
@@ -643,7 +683,9 @@ void nano_input_text16(SDL_Surface *surface, SDL_Event *event,
             //SDL_UpdateWindowSurface(nanoglk_output_window);
 
                return;
+#ifdef SDL12P
             }
+#endif
             break;
          }
          break;

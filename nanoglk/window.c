@@ -54,9 +54,11 @@ SDL_Surface *nanoglk_surface; // The SDL surface representing the screen.
 SDL_Window *nanoglk_output_window;
 SDL_Renderer *nanoglk_output_renderer;
 SDL_Texture *nanoglk_output_texture;
+// ToDo: rename this variable to rootWindow, and what kind of window is it - Glk or SDL?
 static winid_t root = NULL;   // Obviously, the root window.
 
 // Thickness of borders between windows. (Simple solid borders.)
+// this is talking about Glk windows?
 #define BORDER_WIDTH 1
 
 static void window_calc_sizes(winid_t pair,

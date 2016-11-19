@@ -33,7 +33,7 @@ static FILE *logfile;
 #endif
 
 #ifdef LOG_STD
-#define log stdout
+#define logfile stdout
 #define LOG_ENABLED
 #endif
 
