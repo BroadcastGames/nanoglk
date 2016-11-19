@@ -392,7 +392,7 @@ glui32 nanoglk_wintextbuffer_get_line16(winid_t win, Uint16 *text,
 
    while(1) {
       SDL_Event event;
-      nano_input_text16(nanoglk_mainwindow->nanoglk_surface, &event, text, max_len, max_char,
+      nano_input_text16_sdlwindow(nanoglk_mainwindow, &event, text, max_len, max_char,
                         win->area.x + tb->cur_x, win->area.y + tb->cur_y,
                         win->area.w - tb->cur_x,
                         nanoglk_buffer_font[style_Input]->text_height,

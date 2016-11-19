@@ -21,6 +21,7 @@
  * Some UI stuff. The file selection is in a seperate file, "filesel.c".
  */
 
+#include "../nanoglk/nanoglk.h"
 #include "misc.h"
 
 // ToDo: how do we get access to the window global?
@@ -714,3 +715,224 @@ printf("ui.c SDL_KEYDOWN %d\n", event->key.keysym.sym);
    }
 }
 
+
+/*
+ * Lets the user input text. This function returns as soon as the user has input
+ * something which is not processed here; this way, other keys (like UP and DOWN
+ * for history) can be easily implemented. It should look like this:
+ *
+ *    int state = -1;
+ *    while(...) {
+ *       SDL_Event event;
+ *       nano_input_text16(..., &event, ..., &state);
+ *       switch(event.type) {
+ *          ...
+ *
+ * This way, the state of the input (scroll offset and cursor position) is
+ * preserved.
+ *
+ * Arguments:
+ * - sdl_window_out
+ *               the SDL Window holder that the input field should be shown in
+ * - event       the event, which is not processed by this function, is returned
+ *               by this pointer
+ * - text        the buffer of the text, 0-terminated; may be set before
+ * - max_len     the maximum number of characters the user is allowed to enter,
+ *               0-terminator excluded; so, max_len + 1 characters should be
+ *               allocated before
+ * - max_char    the maximal character allowed to enter; this can limit input
+ *               to ASCII (127) or ISO-8859-1 (255) (a requirement defined by
+ *               Glk)
+ * - x, y, w, h  the area in which the input field is shown
+ * - font        the font used for the text
+ * - fg, bg      foreground, background
+ * - state       if not NULL, the state (scroll offset and cursor position) is
+ *               stored here; should be initially set to -1; exact format is
+ *               not part of the interface, and may change!
+ */
+void nano_input_text16_sdlwindow(struct sdl_window_holder *sdl_window_out, SDL_Event *event,
+                       Uint16 *text, int max_len, int max_char,
+                       int x, int y, int w, int h, TTF_Font *font,
+                       SDL_Color fg, SDL_Color bg, int *state)
+{
+   nano_trace("input_text16(..., %p, %d, %d, %d, %d, %d, %d, ...)",
+              text, max_len, max_char, x, y, w, h);
+
+   int pos = strlen16(text);
+   Uint16 *text_part = (Uint16*)nano_malloc((max_len + 1) * sizeof(Uint16*));
+   int ox = 0;
+
+   if(state && *state != -1) {
+      pos = *state & 0x7fff;
+      ox = *state >> 15;
+   }
+
+   while(1) {
+      int cx, c;
+
+      if(pos == 0)
+         cx = 0;
+      else {
+         memcpy(text_part, text, pos * sizeof(Uint16));
+         text_part[pos] = 0;
+         SDL_Surface *ts_part =
+            TTF_RenderUNICODE_Shaded(font, text_part, fg, bg);
+         cx = ts_part->w;
+         SDL_FreeSurface(ts_part);
+      }
+
+      if(cx > ox + w - 1)
+         ox = cx - w + 1;
+      else if(cx < ox)
+         ox = cx;
+
+      SDL_Rect rs = { x, y, w, h };
+      SDL_FillRect(sdl_window_out->nanoglk_surface, &rs, SDL_MapRGB(sdl_window_out->nanoglk_surface->format, bg.r, bg.g, bg.b));
+
+      SDL_Surface *ts_total = TTF_RenderUNICODE_Shaded(font, text, fg, bg);
+      SDL_Rect r1 = { ox, 0, w, h };
+      SDL_Rect r2 = { x, y, w, h };
+      SDL_BlitSurface(ts_total, &r1, sdl_window_out->nanoglk_surface, &r2);
+      SDL_FreeSurface(ts_total);
+
+      SDL_Rect rc = { x + cx - ox, y, 1, h };
+      SDL_FillRect(sdl_window_out->nanoglk_surface, &rc, SDL_MapRGB(sdl_window_out->nanoglk_surface->format, fg.r, fg.g, fg.b));
+
+      // SDL1.2: SDL_Flip(surface);
+      // SDL_UpdateWindowSurface(surface);
+      SDL_UpdateWindowSurface(sdl_window_out->nanoglk_output_window);
+
+      nano_wait_event(event);
+      int len = strlen16(text);
+
+// SDL1.2 --> SDL2 "You no longer get character input from SDL_KEYDOWN events. Use SDL_KEYDOWN to treat the keyboard like a 101-button joystick now. Text input comes from somewhere else."
+// SDL1.2 --> SDL2 "The new event is SDL_TEXTINPUT."
+
+      switch(event->type) {
+      case SDL_TEXTEDITING:
+         printf("ui.c SDL_TEXTEDITING SPOT_AA0\n");
+         break;
+      case SDL_TEXTINPUT: {
+         const char *inputtext = event->text.text;
+         c = inputtext[0];
+         printf("ui.c SDL_TEXTINPUT SPOT_AA0 '%s' %d\n", inputtext, c);
+
+// ToDo: this logic assumes Uint16, really UTF-8 can have 3 or more bytes. But Inform7 is 16-bit currently.
+            if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
+               printf("ui.c SDL_TEXTINPUT branch0 '%s'\n", inputtext);
+               if(len < max_len) {
+                  memmove(text + pos + 1, text + pos,
+                          sizeof(Uint16) * (len - pos + 1));
+                  text[pos] = c;
+                  pos++;
+               }
+            }
+            else {
+               printf("ui.c SDL_TEXTINPUT branch1\n");
+               if(state)
+                  *state = pos | (ox << 15);
+
+               SDL_Rect rs = { x, y, w, h};
+               SDL_FillRect(sdl_window_out->nanoglk_surface, &rs, SDL_MapRGB(sdl_window_out->nanoglk_surface->format,
+                                                     bg.r, bg.g, bg.b));
+               ts_total = TTF_RenderUNICODE_Shaded(font, text, fg, bg);
+               SDL_Rect r1 = { ox, 0, w, h };
+               SDL_Rect r2 = { x, y, w, h };
+               SDL_BlitSurface(ts_total, &r1, sdl_window_out->nanoglk_surface, &r2);
+               SDL_FreeSurface(ts_total);
+               //SDL_RenderPresent(surface);
+// ToDo: how do I make this variable global?
+               SDL_UpdateWindowSurface(sdl_window_out->nanoglk_output_window);
+               return;
+        }
+        break; }
+      case SDL_KEYDOWN:
+printf("ui.c SDL_KEYDOWN %d\n", event->key.keysym.sym);
+         switch(event->key.keysym.sym) {
+         case SDLK_LEFT:
+            if(pos > 0)
+               pos--;
+            break;
+
+         case SDLK_RIGHT:
+            if(text[pos])
+               pos++;
+            break;
+
+         case SDLK_BACKSPACE:
+            if(pos > 0) {
+               memmove(text + pos - 1, text + pos,
+                       sizeof(Uint16) * (len - pos + 1));
+               pos--;
+            }
+            break;
+
+         case SDLK_DELETE:
+            if(text[pos])
+               memmove(text + pos, text + pos + 1,
+                       sizeof(Uint16) * (len - pos));
+            break;
+
+         case SDLK_HOME:
+            pos = 0;
+            break;
+
+         case SDLK_END:
+            pos = strlen16(text);
+            break;
+
+         default:
+            printf("ui.c KEY_DOWN default\n");
+#ifdef SDL12P
+            c = event->key.keysym.scancode;
+            if((c >= 32 && c <= 126) || (c >= 160 && c <= max_char)) {
+               if(len < max_len) {
+                  memmove(text + pos + 1, text + pos,
+                          sizeof(Uint16) * (len - pos + 1));
+                  text[pos] = c;
+                  pos++;
+               }
+            }
+            else {
+#endif
+               if(state)
+                  *state = pos | (ox << 15);
+
+               SDL_Rect rs = { x, y, w, h};
+               SDL_FillRect(sdl_window_out->nanoglk_surface, &rs, SDL_MapRGB(sdl_window_out->nanoglk_surface->format,
+                                                     bg.r, bg.g, bg.b));
+               ts_total = TTF_RenderUNICODE_Shaded(font, text, fg, bg);
+               SDL_Rect r1 = { ox, 0, w, h };
+               SDL_Rect r2 = { x, y, w, h };
+               SDL_BlitSurface(ts_total, &r1, sdl_window_out->nanoglk_surface, &r2);
+               SDL_FreeSurface(ts_total);
+               // SDL1.2: SDL_Flip(surface);
+               SDL_UpdateWindowSurface(sdl_window_out->nanoglk_output_window);
+
+               return;
+#ifdef SDL12P
+            }
+#endif
+            break;
+         }
+         break;
+
+         default:
+            if(state)
+               *state = pos | (ox << 15);
+
+            SDL_Rect rs = { x, y, w, h};
+            SDL_FillRect(sdl_window_out->nanoglk_surface, &rs, SDL_MapRGB(sdl_window_out->nanoglk_surface->format,
+                                                  bg.r, bg.g, bg.b));
+            ts_total = TTF_RenderUNICODE_Shaded(font, text, fg, bg);
+            SDL_Rect r1 = { ox, 0, w, h };
+            SDL_Rect r2 = { x, y, w, h };
+            SDL_BlitSurface(ts_total, &r1, sdl_window_out->nanoglk_surface, &r2);
+            SDL_FreeSurface(ts_total);
+            // SDL1.2: SDL_Flip(surface);
+            SDL_UpdateWindowSurface(sdl_window_out->nanoglk_output_window);
+
+            return;
+      }
+   }
+}
