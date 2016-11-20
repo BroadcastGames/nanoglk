@@ -230,8 +230,8 @@ winid_t glk_window_get_root(void)
 winid_t glk_window_open(winid_t split, glui32 method, glui32 size,
                         glui32 wintype, glui32 rock)
 {
-printf("window.c glk_window_open\n");
-SDL_Delay(2000);
+printf("window.c glk_window_open size %d type %d rock %d\n", size, wintype, rock);
+// SDL_Delay(2000);
 
    winid_t win = (winid_t)nano_malloc(sizeof(struct glk_window_struct));
    nanoglk_log("glk_window_open(%p, %d, %d, %d, %d) => %p",
@@ -319,6 +319,7 @@ SDL_Delay(2000);
       window_resize(split, &split_area);
       win->area = win_area;
 
+      printf("window.c calling window_draw_border, split window.\n");
       window_draw_border(pair);
 
       nano_trace("split %p: (%d, %d, %d x %d)", split, split->area.x,
@@ -644,6 +645,7 @@ void glk_window_set_arrangement(winid_t win, glui32 method, glui32 size,
  */
 void window_rearrange(winid_t pair)
 {
+   printf("window.c window_rearrange\n");
    SDL_Rect left_area, right_area;
    window_calc_sizes(pair, &left_area, &right_area);
 
@@ -661,6 +663,8 @@ void window_rearrange(winid_t pair)
       window_resize(pair->left, &left_area);
    }
 
+   printf("window.c calling window_draw_border, SPOT_A00.\n");
+//SDL_Delay(3500);
    window_draw_border(pair);
 }
 
@@ -670,7 +674,6 @@ void window_rearrange(winid_t pair)
 void window_draw_border(winid_t pair)
 {
 printf("window.c window_draw_border\n");
-SDL_Delay(500);
    winid_t win = pair->right;
    if(win && (win->method & winmethod_BorderMask) == winmethod_Border) {
       // TODO: Which color? Should always be the same. Or, at least, it
@@ -711,12 +714,14 @@ SDL_Delay(500);
  */
 void window_resize(winid_t win, SDL_Rect *area)
 {
+   printf("window.c window_resize type %d\n", win->wintype);
    switch(win->wintype) {
    case wintype_TextBuffer:
       nanoglk_wintextbuffer_resize(win, area);
       break;
 
    case wintype_TextGrid:
+      // this is where blanking problem is
       nanoglk_wintextgrid_resize(win, area);
       break;
 
@@ -780,6 +785,7 @@ winid_t glk_window_get_sibling(winid_t win)
 
 void glk_window_clear(winid_t win)
 {
+   printf("window.c glk_window_clear\n");
    nanoglk_log("glk_window_clear(%p)", win);
 
    switch(win->wintype) {
