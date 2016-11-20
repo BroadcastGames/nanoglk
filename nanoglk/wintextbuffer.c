@@ -115,15 +115,34 @@ void nanoglk_wintextbuffer_free(winid_t win)
    free(win->data);
 }
 
+static int wtb_resize_callcount = 0;
+
 /*
  * Resize a text buffer window.
  */
 void nanoglk_wintextbuffer_resize(winid_t win, SDL_Rect *area)
 {
+   wtb_resize_callcount++;
    nano_trace("nanoglk_wintextbuffer_resize(%p { %d, %d, %d x %d }, "
               "{ %d, %d, %d x %d } )",
               win, win->area.x, win->area.y, win->area.w, win->area.h,
               area->x, area->y, area->w, area->h);
+
+printf("WTBR nanoglk_wintextbuffer_resize(%p { %d, %d, %d x %d }, "
+              "{ %d, %d, %d x %d } )c %d\n",
+              win, win->area.x, win->area.y, win->area.w, win->area.h,
+              area->x, area->y, area->w, area->h, wtb_resize_callcount);
+switch(wtb_resize_callcount) {
+   case 2:
+   printf("WTBR nanoglk_wintextbuffer_resize DELAY_POINTA\n");
+   SDL_Flip(nanoglk_surface);
+   SDL_Delay(4500);
+   // to confirm screen is fine at this point, quit.
+   //SDL_Quit();
+   // RESULTS of this testing #1: without the quit, you see the bottom window there
+   //     before the top window is inserted. You see bottom, pause, top-insert.
+   break;
+}
 
    if(area->w != win->area.w) {
       // Width has changed. Since the text is not preserved, it cannot be

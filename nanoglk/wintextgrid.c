@@ -70,15 +70,21 @@ void nanoglk_wintextgrid_clear(winid_t win)
                            win->bg[win->cur_styl].b));
 }
 
+static int wtg_resize_callcount = 0;
+
 /*
  * Resize a text grid window.
  */
 void nanoglk_wintextgrid_resize(winid_t win, SDL_Rect *area)
 {
+   wtg_resize_callcount++;
+
+printf("WTGR saving %d %d %d %d cc %d\n", win->area.x, win->area.y, MIN(win->area.w, area->w), MIN(win->area.h, area->h), wtg_resize_callcount);
    // Save the current contents in a new surface "s".
    SDL_Rect r1 = { win->area.x, win->area.y,
                    MIN(win->area.w, area->w), MIN(win->area.h, area->h) };
    SDL_Rect r2 = { 0, 0, r1.w, r2.w };
+printf("WTGR create_surface %d %d %d cc %d\n", r2.w, r2.h, nanoglk_screen_depth, wtg_resize_callcount);
    SDL_Surface *s =
       SDL_CreateRGBSurface(SDL_SWSURFACE, r2.w, r2.h, nanoglk_screen_depth,
                            0, 0, 0, 0); /* TODO Argument [RGB]mask? Currently
@@ -93,6 +99,7 @@ void nanoglk_wintextgrid_resize(winid_t win, SDL_Rect *area)
                            win->bg[win->cur_styl].b));
 
    // ... and copy the old contents.
+printf("WTGR copy %d %d %d %d cc %d\n", win->area.x, win->area.y, r1.w, r2.w, wtg_resize_callcount);
    SDL_Rect r3 = { win->area.x, win->area.y, r1.w, r2.w };
    SDL_BlitSurface(s, &r2, nanoglk_surface, &r3);
    SDL_FreeSurface(s);
